@@ -40,27 +40,27 @@ const Header = () => {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo and Brand */}
           <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => scrollToSection('hero')}
-              className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center"
-            >
-              <Image
-                src="/images/mascot/mascot-character.png"
-                alt="What's My GPA Mascot"
-                width={32}
-                height={32}
-                className="w-8 h-8"
-              />
-            </button>
-            <button 
-              onClick={() => scrollToSection('hero')}
-              className={cn(
-                "text-xl font-black font-nunito transition-colors duration-300",
-                isScrolled ? "text-gray-800" : "text-white"
-              )}
-            >
-              What's My GPA?
-            </button>
+<div 
+  onClick={() => scrollToSection('hero')}
+  className="flex items-center space-x-4 cursor-pointer"
+>
+  <Image
+    src="/images/mascot/logo.png"
+    alt="What's My GPA Mascot"
+    width={60}
+    height={60}
+    className="w-[52px] h-[52px] md:w-[60px] md:h-[60px]"
+  />
+  <span
+    className={cn(
+      "text-2xl font-black font-nunito transition-colors duration-300",
+      isScrolled ? "text-gray-800" : "text-white"
+    )}
+  >
+    What's My GPA?
+  </span>
+</div>
+
           </div>
 
           {/* Desktop Navigation */}
@@ -113,7 +113,7 @@ const Header = () => {
 
           {/* CTA Button */}
           <div className="hidden lg:block">
-            <Button size="md" className="bg-[#0A529F] hover:bg-[#084285] text-white">Download Now</Button>
+            <Button size="md" className="bg-[#0A529F] hover:bg-[#084285] text-white rounded-full">Download Now</Button>
           </div>
 
           {/* Mobile menu button */}
@@ -182,7 +182,7 @@ const Header = () => {
                 FAQs
               </button>
               <div className="px-4">
-                <Button className="w-full bg-[#0A529F] hover:bg-[#084285] text-white">Download Now</Button>
+                <Button className="w-full bg-[#0A529F] hover:bg-[#084285] text-white rounded-full">Download Now</Button>
               </div>
             </div>
           </div>
