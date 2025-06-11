@@ -547,7 +547,6 @@ const HowItWorks = () => {
                           width={300}
                           height={600}
                           className="drop-shadow-xl mx-auto"
-                          title={screenshot.title}
                         />
                       </div>
                     </div>
@@ -584,7 +583,6 @@ const HowItWorks = () => {
                           width={300}
                           height={600}
                           className="drop-shadow-xl mx-auto"
-                          title={screenshot.title}
                         />
                       </div>
                     </div>
