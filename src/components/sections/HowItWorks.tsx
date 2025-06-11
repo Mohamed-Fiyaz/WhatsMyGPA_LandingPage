@@ -303,6 +303,8 @@ const HowItWorks = () => {
     >
       <h3 className="text-lg font-semibold text-[#0A529F] text-center mb-3">{title}</h3>
       <p className="text-sm text-gray-600 text-center leading-relaxed">{description}</p>
+      <p className="text-xs text-[#4580A7] text-center mt-3 font-medium">Tap to view screenshots</p>
+
     </div>
   )
 
@@ -446,7 +448,7 @@ const HowItWorks = () => {
             How It Works
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Tap to view screenshots
+            Steps To Calculate Your GPA
           </p>
         </div>
 
