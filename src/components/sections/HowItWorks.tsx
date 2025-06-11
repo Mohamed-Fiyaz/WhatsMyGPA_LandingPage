@@ -58,13 +58,16 @@ const HowItWorks = () => {
   const mobileStandardRef = useRef<HTMLDivElement>(null)
 
   // Debounced scroll handlers to prevent excessive updates
-  const debounce = useCallback((func: Function, wait: number) => {
-    let timeout: NodeJS.Timeout
-    return (...args: any[]) => {
-      clearTimeout(timeout)
-      timeout = setTimeout(() => func(...args), wait)
-    }
-  }, [])
+  const debounce = useCallback(
+    <T extends unknown[]>(func: (...args: T) => void, wait: number) => {
+      let timeout: NodeJS.Timeout
+      return (...args: T) => {
+        clearTimeout(timeout)
+        timeout = setTimeout(() => func(...args), wait)
+      }
+    },
+    []
+  )
 
   // Intersection Observer for scroll animations with improved settings
   useEffect(() => {
@@ -121,26 +124,29 @@ const HowItWorks = () => {
 
   // Debounced scroll handlers
   const debouncedHandleScroll = useCallback(
-    debounce((ref: React.RefObject<HTMLDivElement | null>, setSlide: React.Dispatch<React.SetStateAction<number>>) => {
-      if (ref.current) {
-        const slideWidth = ref.current.offsetWidth
-        const currentIndex = Math.round(ref.current.scrollLeft / slideWidth)
-        setSlide(currentIndex)
-      }
-    }, 50),
+    (ref: React.RefObject<HTMLDivElement | null>, setSlide: (value: number) => void) => {
+      const debouncedFn = debounce((slideRef: React.RefObject<HTMLDivElement | null>, setSlideFn: (value: number) => void) => {
+        if (slideRef.current) {
+          const slideWidth = slideRef.current.offsetWidth
+          const currentIndex = Math.round(slideRef.current.scrollLeft / slideWidth)
+          setSlideFn(currentIndex)
+        }
+      }, 50)
+      return debouncedFn(ref, setSlide)
+    },
     [debounce]
   )
 
-  const debouncedHandleDesktopScroll = useCallback(
-    debounce(() => {
+  const debouncedHandleDesktopScroll = useCallback(() => {
+    const debouncedFn = debounce(() => {
       if (desktopCarouselRef.current) {
         const slideWidth = desktopCarouselRef.current.offsetWidth
         const currentIndex = Math.round(desktopCarouselRef.current.scrollLeft / slideWidth)
         setDesktopSection(currentIndex)
       }
-    }, 50),
-    [debounce]
-  )
+    }, 50)
+    return debouncedFn()
+  }, [debounce])
 
   useEffect(() => {
     const mainRef = mainCarouselRef.current
