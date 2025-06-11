@@ -82,8 +82,7 @@ const Hero = () => {
                 className="bg-[#4580A7] hover:bg-[#3a6b8f] flex items-center justify-center gap-2 font-nunito-black font-black rounded-full px-6 py-3 w-full sm:w-auto text-base sm:text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 group"
                 style={{ outline: 'none', border: 'none' }}
               >
-                <Download className="w-5 h-5 group-hover:animate-bounce" />
-                Download the app
+                 Download the app
               </Button>
             </div>
           </div>
@@ -93,18 +92,18 @@ const Hero = () => {
             isVisible ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0'
           }`}>
             <div className="relative z-10 flex justify-center items-center">
-
+              
               {/* Mobile: Single Screenshot */}
               <div className="block sm:hidden">
-                <div className={`transition-all duration-1000 ease-out delay-800 ${
-                  isVisible ? 'translate-y-0 rotate-0' : 'translate-y-8 rotate-3'
+                <div className={`transition-all duration-1200 ease-out delay-600 ${
+                  isVisible ? 'translate-y-0 scale-100 rotate-0' : 'translate-y-16 scale-75 rotate-6'
                 }`}>
                   <Image
                     src="/screenshots/preloaded_SGPA_thumb.png"
                     alt="What's My GPA App - SGPA Screen"
                     width={260}
                     height={520}
-                    className="drop-shadow-xl w-auto h-auto max-w-[260px] hover:scale-105 transition-transform duration-300"
+                    className="drop-shadow-2xl w-auto h-auto max-w-[260px] hover:scale-110 hover:-rotate-1 transition-all duration-300"
                   />
                 </div>
               </div>
@@ -166,20 +165,6 @@ const Hero = () => {
                 </div>
               </div>
 
-            </div>
-
-            {/* Animated Background Elements - Removed purple elements */}
-            <div className="absolute inset-0 -z-10">
-              <div className={`absolute top-10 sm:top-20 left-5 sm:left-10 w-16 sm:w-20 h-16 sm:h-20 bg-white/10 rounded-full blur-xl transition-all duration-2000 ease-out delay-1200 ${
-                isVisible ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
-              }`}></div>
-              <div className={`absolute bottom-10 sm:bottom-20 right-5 sm:right-10 w-24 sm:w-32 h-24 sm:h-32 bg-blue-300/20 rounded-full blur-2xl transition-all duration-2000 ease-out delay-1400 ${
-                isVisible ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
-              }`}></div>
-              
-              {/* Floating animation elements - Removed purple element */}
-              <div className="absolute top-1/4 right-1/4 w-8 h-8 bg-white/5 rounded-full animate-ping"></div>
-              <div className="absolute bottom-1/3 left-1/3 w-6 h-6 bg-blue-400/10 rounded-full animate-pulse"></div>
             </div>
           </div>
         </div>

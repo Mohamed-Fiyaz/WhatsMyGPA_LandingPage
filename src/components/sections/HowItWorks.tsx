@@ -10,11 +10,47 @@ const HowItWorks = () => {
   const [preloadedSlide, setPreloadedSlide] = useState(0)
   const [standardSlide, setStandardSlide] = useState(0)
   const [desktopSection, setDesktopSection] = useState(0) // 0 = preloaded, 1 = standard
+  const [visibleSections, setVisibleSections] = useState(new Set())
   
-  const mainCarouselRef = useRef<HTMLDivElement>(null)
-  const preloadedCarouselRef = useRef<HTMLDivElement>(null)
-  const standardCarouselRef = useRef<HTMLDivElement>(null)
-  const desktopCarouselRef = useRef<HTMLDivElement>(null)
+  const mainCarouselRef = useRef(null)
+  const preloadedCarouselRef = useRef(null)
+  const standardCarouselRef = useRef(null)
+  const desktopCarouselRef = useRef(null)
+  
+  // Refs for scroll animation triggers
+  const headerRef = useRef(null)
+  const desktopScreenshotsRef = useRef(null)
+  const mobileCarouselRef = useRef(null)
+  const descriptionRef = useRef(null)
+  const calculatorSectionsRef = useRef(null)
+  const mobilePreloadedRef = useRef(null)
+  const mobileStandardRef = useRef(null)
+
+  // Intersection Observer for scroll animations
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const sectionId = entry.target.getAttribute('data-section')
+          if (sectionId) {
+            setVisibleSections(prev => new Set([...prev, sectionId]))
+          }
+        }
+      })
+    }, observerOptions)
+
+    const sections = [headerRef, desktopScreenshotsRef, mobileCarouselRef, descriptionRef, calculatorSectionsRef, mobilePreloadedRef, mobileStandardRef]
+    sections.forEach(ref => {
+      if (ref.current) observer.observe(ref.current)
+    })
+
+    return () => observer.disconnect()
+  }, [])
 
   const steps = [
     {
@@ -53,7 +89,7 @@ const HowItWorks = () => {
     { src: "/screenshots/standard_cgpa_thumb.png", alt: "Standard CGPA Calculator", title: "CGPA", type: "CGPA" }
   ]
 
-  const scrollToSlide = (ref: React.RefObject<HTMLDivElement>, index: number) => {
+  const scrollToSlide = (ref, index) => {
     if (ref.current) {
       const slideWidth = ref.current.offsetWidth
       ref.current.scrollTo({
@@ -63,7 +99,7 @@ const HowItWorks = () => {
     }
   }
 
-  const handleScroll = (ref: React.RefObject<HTMLDivElement>, setSlide: (index: number) => void) => {
+  const handleScroll = (ref, setSlide) => {
     if (ref.current) {
       const slideWidth = ref.current.offsetWidth
       const currentIndex = Math.round(ref.current.scrollLeft / slideWidth)
@@ -102,47 +138,49 @@ const HowItWorks = () => {
     }
   }, [])
 
-  const GlassChevron = ({ direction, onClick }: { direction: 'left' | 'right', onClick: () => void }) => (
+  const GlassChevron = ({ direction, onClick }) => (
     <button
       onClick={onClick}
       className={`absolute top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full 
         backdrop-blur-md bg-white/30 border border-white/50 shadow-lg
         flex items-center justify-center transition-all duration-300
-        hover:bg-white/40 hover:shadow-xl hover:scale-105 opacity-90 hover:opacity-100
+        md:hover:bg-white/40 md:hover:shadow-xl md:hover:scale-105 
+        opacity-90 md:hover:opacity-100
+        active:scale-95 transform-gpu touch-manipulation
         ${direction === 'left' ? 'left-4' : 'right-4'}
       `}
     >
       {direction === 'left' ? (
-        <ChevronLeft className="w-6 h-6 text-gray-700 hover:text-[#4580A7] transition-colors duration-300" />
+        <ChevronLeft className="w-6 h-6 text-gray-700 md:hover:text-[#4580A7] transition-colors duration-300" />
       ) : (
-        <ChevronRight className="w-6 h-6 text-gray-700 hover:text-[#4580A7] transition-colors duration-300" />
+        <ChevronRight className="w-6 h-6 text-gray-700 md:hover:text-[#4580A7] transition-colors duration-300" />
       )}
     </button>
   )
 
-  const ScrollIndicators = ({ total, active, className = "" }: { total: number, active: number, className?: string }) => (
+  const ScrollIndicators = ({ total, active, className = "" }) => (
     <div className={`flex justify-center space-x-2 ${className}`}>
       {Array.from({ length: total }).map((_, index) => (
         <div
           key={index}
-          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+          className={`w-2 h-2 rounded-full transition-all duration-500 transform-gpu ${
             index === active 
-              ? 'bg-[#4580A7] scale-125' 
-              : 'bg-gray-300 hover:bg-gray-400'
+              ? 'bg-[#4580A7] scale-125 shadow-lg' 
+              : 'bg-gray-300 md:hover:bg-gray-400 md:hover:scale-110'
           }`}
         />
       ))}
     </div>
   )
 
-  const CarouselDots = ({ total, active, onDotClick }: { total: number, active: number, onDotClick: (index: number) => void }) => (
+  const CarouselDots = ({ total, active, onDotClick }) => (
     <div className="flex justify-center space-x-2 mt-4 md:hidden">
       {Array.from({ length: total }).map((_, index) => (
         <button
           key={index}
           onClick={() => onDotClick(index)}
-          className={`w-2 h-2 rounded-full transition-colors ${
-            index === active ? 'bg-[#4580A7]' : 'bg-gray-300'
+          className={`w-2 h-2 rounded-full transition-all duration-300 transform-gpu touch-manipulation ${
+            index === active ? 'bg-[#4580A7] scale-110' : 'bg-gray-300'
           }`}
         />
       ))}
@@ -151,7 +189,7 @@ const HowItWorks = () => {
 
   const SectionDivider = () => (
     <div className="flex justify-center my-16">
-      <div className="w-32 h-0.5 bg-[#4580A7]"></div>
+      <div className="w-32 h-0.5 bg-[#4580A7] animate-pulse"></div>
     </div>
   )
 
@@ -159,20 +197,22 @@ const HowItWorks = () => {
     <div className="hidden md:flex justify-center items-center gap-4 mb-8">
       <button
         onClick={() => scrollToSlide(desktopCarouselRef, 0)}
-        className={`px-6 py-3 rounded-full font-medium transition-all ${
+        className={`px-6 py-3 rounded-full font-medium transition-all duration-300 transform-gpu 
+        md:hover:scale-105 active:scale-95 touch-manipulation ${
           desktopSection === 0 
-            ? 'bg-[#4580A7] text-white shadow-lg' 
-            : 'bg-white text-[#4580A7] border-2 border-[#4580A7] hover:bg-[#4580A7] hover:text-white'
+            ? 'bg-[#4580A7] text-white shadow-lg md:hover:shadow-xl' 
+            : 'bg-white text-[#4580A7] border-2 border-[#4580A7] md:hover:bg-[#4580A7] md:hover:text-white md:hover:shadow-lg'
         }`}
       >
         Preloaded GPA Calculator
       </button>
       <button
         onClick={() => scrollToSlide(desktopCarouselRef, 1)}
-        className={`px-6 py-3 rounded-full font-medium transition-all ${
+        className={`px-6 py-3 rounded-full font-medium transition-all duration-300 transform-gpu 
+        md:hover:scale-105 active:scale-95 touch-manipulation ${
           desktopSection === 1 
-            ? 'bg-[#4580A7] text-white shadow-lg' 
-            : 'bg-white text-[#4580A7] border-2 border-[#4580A7] hover:bg-[#4580A7] hover:text-white'
+            ? 'bg-[#4580A7] text-white shadow-lg md:hover:shadow-xl' 
+            : 'bg-white text-[#4580A7] border-2 border-[#4580A7] md:hover:bg-[#4580A7] md:hover:text-white md:hover:shadow-lg'
         }`}
       >
         Standard GPA Calculator
@@ -180,10 +220,39 @@ const HowItWorks = () => {
     </div>
   )
 
+  const AnimatedImage = ({ src, alt, width, height, className = "", title }) => (
+    <div className="group">
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        className={`transition-all duration-300 transform-gpu md:group-hover:scale-105 ${className}`}
+      />
+      {title && (
+        <p className="text-center text-gray-700 font-medium mt-3 transition-colors duration-300 md:group-hover:text-[#4580A7]">
+          {title}
+        </p>
+      )}
+    </div>
+  )
+
+  const AnimatedBadge = ({ type }) => (
+    <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium transition-all duration-300 transform-gpu md:hover:scale-105 md:hover:shadow-lg md:hover:bg-[#3a6b8a]">
+      {type}
+    </div>
+  )
+
   return (
     <section id="how-it-works" className="py-20 bg-gray-50">
       <Container>
-        <div className="text-center mb-16">
+        <div 
+          ref={headerRef}
+          data-section="header"
+          className={`text-center mb-16 transition-all duration-1000 transform ${
+            visibleSections.has('header') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
             How It Works
           </h2>
@@ -193,10 +262,22 @@ const HowItWorks = () => {
         </div>
 
         {/* Desktop: Three Phone Mockups Side by Side */}
-        <div className="hidden md:flex justify-center items-center gap-8 mb-16">
+        <div 
+          ref={desktopScreenshotsRef}
+          data-section="desktop-screenshots"
+          className={`hidden md:flex justify-center items-center gap-8 mb-16 transition-all duration-1000 transform ${
+            visibleSections.has('desktop-screenshots') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           {mainScreenshots.map((screenshot, index) => (
-            <div key={index} className="flex-shrink-0">
-              <Image
+            <div 
+              key={index} 
+              className={`flex-shrink-0 transition-all duration-1000 transform ${
+                visibleSections.has('desktop-screenshots') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              }`}
+              style={{ transitionDelay: visibleSections.has('desktop-screenshots') ? `${index * 150}ms` : '0ms' }}
+            >
+              <AnimatedImage
                 src={screenshot.src}
                 alt={screenshot.alt}
                 width={250}
@@ -208,7 +289,13 @@ const HowItWorks = () => {
         </div>
 
         {/* Mobile: Swipeable Carousel with Chevrons */}
-        <div className="md:hidden mb-8">
+        <div 
+          ref={mobileCarouselRef}
+          data-section="mobile-carousel"
+          className={`md:hidden mb-8 transition-all duration-1000 transform ${
+            visibleSections.has('mobile-carousel') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           <div className="relative">
             <div 
               ref={mainCarouselRef}
@@ -217,16 +304,14 @@ const HowItWorks = () => {
             >
               {mainScreenshots.map((screenshot, index) => (
                 <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                  <Image
+                  <AnimatedImage
                     src={screenshot.src}
                     alt={screenshot.alt}
                     width={200}
                     height={400}
                     className="drop-shadow-xl"
+                    title={screenshot.title}
                   />
-                  <p className="text-center text-gray-700 font-medium mt-3">
-                    {screenshot.title}
-                  </p>
                 </div>
               ))}
             </div>
@@ -249,7 +334,13 @@ const HowItWorks = () => {
         </div>
 
         {/* Description Text */}
-        <div className="max-w-4xl mx-auto text-center mb-16">
+        <div 
+          ref={descriptionRef}
+          data-section="description"
+          className={`max-w-4xl mx-auto text-center mb-16 transition-all duration-1000 transform ${
+            visibleSections.has('description') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           <p className="text-lg text-gray-700 mb-6">
             <strong>The Preloaded GPA Calculator</strong> is designed for B.Tech and
             Integrated M.Tech students of SRM IST under the 21 Regulation and newer.
@@ -265,7 +356,13 @@ const HowItWorks = () => {
         <SectionDivider />
 
         {/* Desktop: Horizontal Scrollable Sections with Chevrons */}
-        <div className="hidden md:block mb-2">
+        <div 
+          ref={calculatorSectionsRef}
+          data-section="calculator-sections"
+          className={`hidden md:block mb-2 transition-all duration-1000 transform ${
+            visibleSections.has('calculator-sections') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           <div className="relative">
             <div 
               ref={desktopCarouselRef}
@@ -279,10 +376,16 @@ const HowItWorks = () => {
                 </h3>
                 <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto mb-8">
                   {preloadedScreenshots.map((screenshot, index) => (
-                    <div key={index} className="text-center">
+                    <div 
+                      key={index} 
+                      className={`text-center transition-all duration-1000 transform ${
+                        visibleSections.has('calculator-sections') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                      }`}
+                      style={{ transitionDelay: visibleSections.has('calculator-sections') ? `${index * 200}ms` : '0ms' }}
+                    >
                       <h4 className="text-xl font-semibold text-gray-900 mb-4">{screenshot.type}</h4>
                       <div className="flex justify-center">
-                        <Image
+                        <AnimatedImage
                           src={screenshot.src}
                           alt={screenshot.alt}
                           width={300}
@@ -307,10 +410,16 @@ const HowItWorks = () => {
                 </h3>
                 <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto mb-8">
                   {standardScreenshots.map((screenshot, index) => (
-                    <div key={index} className="text-center">
+                    <div 
+                      key={index} 
+                      className={`text-center transition-all duration-1000 transform ${
+                        visibleSections.has('calculator-sections') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                      }`}
+                      style={{ transitionDelay: visibleSections.has('calculator-sections') ? `${index * 200}ms` : '0ms' }}
+                    >
                       <h4 className="text-xl font-semibold text-gray-900 mb-4">{screenshot.type}</h4>
                       <div className="flex justify-center">
-                        <Image
+                        <AnimatedImage
                           src={screenshot.src}
                           alt={screenshot.alt}
                           width={300}
@@ -345,10 +454,16 @@ const HowItWorks = () => {
           />
         </div>
 
-        {/* Mobile: Original Vertical Layout with Enhanced Carousels */}
+        {/* Mobile: Original Vertical Layout with Enhanced Carousels and Animations */}
         <div className="md:hidden">
           {/* Preloaded GPA Calculator Section */}
-          <div className="mb-16">
+          <div 
+            ref={mobilePreloadedRef}
+            data-section="mobile-preloaded"
+            className={`mb-16 transition-all duration-1000 transform ${
+              visibleSections.has('mobile-preloaded') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+          >
             <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
               Preloaded GPA Calculator
             </h3>
@@ -362,10 +477,8 @@ const HowItWorks = () => {
                 >
                   {preloadedScreenshots.map((screenshot, index) => (
                     <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                      <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium">
-                        {screenshot.type}
-                      </div>
-                      <Image
+                      <AnimatedBadge type={screenshot.type} />
+                      <AnimatedImage
                         src={screenshot.src}
                         alt={screenshot.alt}
                         width={280}
@@ -403,7 +516,13 @@ const HowItWorks = () => {
           <SectionDivider />
 
           {/* Standard GPA Calculator Section */}
-          <div>
+          <div 
+            ref={mobileStandardRef}
+            data-section="mobile-standard"
+            className={`transition-all duration-1000 transform ${
+              visibleSections.has('mobile-standard') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+          >
             <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
               Standard GPA Calculator
             </h3>
@@ -417,10 +536,8 @@ const HowItWorks = () => {
                 >
                   {standardScreenshots.map((screenshot, index) => (
                     <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                      <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium">
-                        {screenshot.type}
-                      </div>
-                      <Image
+                      <AnimatedBadge type={screenshot.type} />
+                      <AnimatedImage
                         src={screenshot.src}
                         alt={screenshot.alt}
                         width={280}

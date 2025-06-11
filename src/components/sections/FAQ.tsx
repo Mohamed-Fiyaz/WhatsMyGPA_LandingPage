@@ -1,11 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Container from '@/components/ui/Container'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
 const FAQ = () => {
   const [openItems, setOpenItems] = useState<number[]>([])
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    const section = document.getElementById('faq')
+    if (section) {
+      observer.observe(section)
+    }
+
+    return () => observer.disconnect()
+  }, [])
 
   const faqs = [
     {
@@ -42,7 +61,7 @@ const FAQ = () => {
 
   const toggleItem = (id: number) => {
     setOpenItems(prev => 
-      prev.includes(id) 
+      prev.includes(id)
         ? prev.filter(item => item !== id)
         : [...prev, id]
     )
@@ -51,7 +70,10 @@ const FAQ = () => {
   return (
     <section id="faq" className="py-20 bg-white">
       <Container>
-        <div className="text-center mb-16">
+        {/* Header Animation */}
+        <div className={`text-center mb-16 transition-all duration-1000 ease-out ${
+          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+        }`}>
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
             Frequently Asked Questions
           </h2>
@@ -60,30 +82,54 @@ const FAQ = () => {
           </p>
         </div>
 
+        {/* FAQ Items with Staggered Animation */}
         <div className="max-w-4xl mx-auto">
-          {faqs.map((faq) => (
-            <div key={faq.id} className="border-b border-gray-200 last:border-b-0">
+          {faqs.map((faq, index) => (
+            <div 
+              key={faq.id} 
+              className={`border-b border-gray-200 last:border-b-0 transition-all duration-700 ease-out ${
+                isVisible 
+                  ? 'translate-y-0 opacity-100' 
+                  : 'translate-y-6 opacity-0'
+              }`}
+              style={{ 
+                transitionDelay: isVisible ? `${200 + index * 100}ms` : '0ms' 
+              }}
+            >
               <button
                 onClick={() => toggleItem(faq.id)}
-                className="w-full py-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                className="w-full py-6 text-left flex items-center justify-between hover:bg-gray-50 transition-all duration-300 rounded-lg px-4 group"
               >
-                <h3 className="text-lg font-semibold text-gray-900 pr-4">
+                <h3 className="text-lg font-semibold text-gray-900 pr-4 group-hover:text-[#4580A7] transition-colors duration-300">
                   {faq.question}
                 </h3>
-                {openItems.includes(faq.id) ? (
-                  <ChevronUp size={24} className="text-[#4580A7] flex-shrink-0" />
-                ) : (
-                  <ChevronDown size={24} className="text-gray-400 flex-shrink-0" />
-                )}
+                <div className={`flex-shrink-0 transition-all duration-300 ease-out ${
+                  openItems.includes(faq.id) ? 'rotate-180' : 'rotate-0'
+                }`}>
+                  {openItems.includes(faq.id) ? (
+                    <ChevronUp size={24} className="text-[#4580A7]" />
+                  ) : (
+                    <ChevronDown size={24} className="text-gray-400 group-hover:text-[#4580A7] transition-colors duration-300" />
+                  )}
+                </div>
               </button>
               
-              {openItems.includes(faq.id) && (
-                <div className="pb-6 pr-8">
+              {/* Animated Answer */}
+              <div className={`overflow-hidden transition-all duration-500 ease-out ${
+                openItems.includes(faq.id) 
+                  ? 'max-h-96 opacity-100' 
+                  : 'max-h-0 opacity-0'
+              }`}>
+                <div className={`pb-6 pr-8 pl-4 transition-all duration-300 ease-out ${
+                  openItems.includes(faq.id)
+                    ? 'translate-y-0'
+                    : '-translate-y-2'
+                }`}>
                   <p className="text-gray-600 leading-relaxed">
                     {faq.answer}
                   </p>
                 </div>
-              )}
+              </div>
             </div>
           ))}
         </div>
