@@ -134,14 +134,15 @@ alt="What&#39;s My GPA Mascot"
                   height={60}
                   className="w-[52px] h-[52px] md:w-[60px] md:h-[60px] transition-transform duration-200 group-hover:scale-105"
                 />
-                <span
-                  className={cn(
-                    "ml-1 text-xl md:text-2xl font-black font-nunito transition-all duration-300 whitespace-nowrap group-hover:scale-105",
-                    isScrolled ? "text-gray-800" : "text-white"
-                  )}
-                >
-                  What's My GPA?
-                </span>
+<span
+  className={cn(
+    "ml-1 text-xl md:text-2xl font-black font-nunito transition-all duration-300 whitespace-nowrap group-hover:scale-105",
+    isScrolled ? "text-gray-800" : "text-white"
+  )}
+>
+  What&apos;s My GPA?
+</span>
+
               </div>
             </div>
 

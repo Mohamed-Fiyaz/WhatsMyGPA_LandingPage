@@ -137,9 +137,10 @@ alt="What&#39;s My GPA Mascot"
                     <Mail size={14} className="sm:w-4 sm:h-4 flex-shrink-0" />
                     <span className="break-all sm:break-normal">whatsmygpa.app@gmail.com</span>
                   </a>
-                  <p className="text-xs sm:text-sm leading-relaxed max-w-xs mx-auto sm:mx-0">
-                    We'd love to hear from you! Send us your feedback, suggestions, or questions.
-                  </p>
+<p className="text-xs sm:text-sm leading-relaxed max-w-xs mx-auto sm:mx-0">
+  We&#39;d love to hear from you! Send us your feedback, suggestions, or questions.
+</p>
+
                 </div>
               </div>
             </div>

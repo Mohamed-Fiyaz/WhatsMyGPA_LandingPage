@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Container from '@/components/ui/Container'
-import { Smartphone, Calculator, FileText, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 const HowItWorks = () => {

@@ -20,13 +20,6 @@ const Hero = () => {
     setTimeout(() => setShowPopup(false), 3000) // Auto close after 3 seconds
   }
 
-  const scrollToNext = () => {
-    window.scrollTo({
-      top: window.innerHeight,
-      behavior: 'smooth'
-    })
-  }
-
   return (
     <section className="hero-bg text-white min-h-screen flex flex-col items-center pt-16 pb-8 px-4 sm:px-0 sm:pt-20 relative overflow-hidden">
       <Container className="flex-1 flex items-center">
