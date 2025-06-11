@@ -73,7 +73,7 @@ const Features = () => {
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
         }`}>
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-            Why Choose What's My GPA?
+  Why Choose What&#39;s My GPA?
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Built by a student, for students. Experience the easiest way to calculate your GPA.

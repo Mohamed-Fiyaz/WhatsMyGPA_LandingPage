@@ -30,32 +30,32 @@ const FAQ = () => {
     {
       id: 1,
       question: 'Is this app only for SRM IST students?',
-      answer: 'Yes, the app is specifically designed for SRM IST students.'
+      answer: "Yes, the app is specifically designed for SRM IST students."
     },
     {
       id: 2,
       question: 'How accurate are the GPA calculations?',
-      answer: 'Our calculations are 100% accurate and follow the official SRM IST grading system and credit structure. The app has been tested extensively to ensure precision.'
+      answer: "Our calculations are 100% accurate and follow the official SRM IST grading system and credit structure. The app has been tested extensively to ensure precision."
     },
     {
       id: 3,
       question: 'Do I need to enter all subjects manually?',
-      answer: 'Not if you\'re a B.Tech or Integrated M.Tech student under the 21 Regulation! The Preloaded GPA Calculator automatically fills in all subjects and credits based on your course selection.'
+      answer: "Not if you're a B.Tech or Integrated M.Tech student under the 21 Regulation! The Preloaded GPA Calculator automatically fills in all subjects and credits based on your course selection."
     },
     {
       id: 4,
       question: 'Can I calculate both SGPA and CGPA?',
-      answer: 'Yes! The app supports both SGPA (Semester Grade Point Average) and CGPA (Cumulative Grade Point Average) calculations with separate dedicated screens.'
+      answer: "Yes! The app supports both SGPA (Semester Grade Point Average) and CGPA (Cumulative Grade Point Average) calculations with separate dedicated screens."
     },
     {
       id: 5,
       question: 'Why are subjects like UHV II not included?',
-      answer: 'As per the curriculum and syllabus provided by SRM IST, the grade points earned in that course are not considered for SGPA/CGPA calculation.'
+      answer: "As per the curriculum and syllabus provided by SRM IST, the grade points earned in that course are not considered for SGPA/CGPA calculation."
     },
     {
       id: 6,
       question: 'Does the app work offline?',
-      answer: 'Yes, once downloaded, the app works completely offline. No internet connection required for GPA calculations.'
+      answer: "Yes, once downloaded, the app works completely offline. No internet connection required for GPA calculations."
     }
   ]
 
