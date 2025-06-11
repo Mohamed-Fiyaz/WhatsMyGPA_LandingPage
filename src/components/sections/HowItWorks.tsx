@@ -99,7 +99,7 @@ const HowItWorks = () => {
     { src: "/screenshots/standard_cgpa_thumb.png", alt: "Standard CGPA Calculator", title: "CGPA", type: "CGPA" }
   ]
 
-  const scrollToSlide = (ref: React.RefObject<HTMLDivElement>, index: number) => {
+  const scrollToSlide = (ref: React.RefObject<HTMLDivElement | null>, index: number) => {
     if (ref.current) {
       const slideWidth = ref.current.offsetWidth
       ref.current.scrollTo({
@@ -109,7 +109,7 @@ const HowItWorks = () => {
     }
   }
 
-  const handleScroll = (ref: React.RefObject<HTMLDivElement>, setSlide: React.Dispatch<React.SetStateAction<number>>) => {
+  const handleScroll = (ref: React.RefObject<HTMLDivElement | null>, setSlide: React.Dispatch<React.SetStateAction<number>>) => {
     if (ref.current) {
       const slideWidth = ref.current.offsetWidth
       const currentIndex = Math.round(ref.current.scrollLeft / slideWidth)
