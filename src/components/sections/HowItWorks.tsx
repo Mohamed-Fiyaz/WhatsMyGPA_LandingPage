@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Container from '@/components/ui/Container'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useState, useRef, useEffect, useCallback } from 'react'
 
 interface Screenshot {
@@ -32,17 +32,15 @@ interface AnimatedImageProps {
   title?: string
 }
 
-interface StaticImageProps {
-  src: string
-  alt: string
-  width: number
-  height: number
-  className?: string
-  title?: string
-}
-
 interface AnimatedBadgeProps {
   type: string
+}
+
+interface PopupCarouselProps {
+  screenshots: Screenshot[]
+  title: string
+  isOpen: boolean
+  onClose: () => void
 }
 
 const HowItWorks = () => {
@@ -51,12 +49,18 @@ const HowItWorks = () => {
   const [standardSlide, setStandardSlide] = useState(0)
   const [desktopSection, setDesktopSection] = useState(0)
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
+  // Track sections that have been animated (one-time animation)
+  const [animatedSections, setAnimatedSections] = useState<Set<string>>(new Set())
+  
+  // Mobile popup states
+  const [popupOpen, setPopupOpen] = useState<string | null>(null)
   
   // Fixed ref types - using proper HTMLDivElement type
   const mainCarouselRef = useRef<HTMLDivElement>(null)
   const preloadedCarouselRef = useRef<HTMLDivElement>(null)
   const standardCarouselRef = useRef<HTMLDivElement>(null)
   const desktopCarouselRef = useRef<HTMLDivElement>(null)
+  const popupCarouselRef = useRef<HTMLDivElement>(null)
   
   // Refs for scroll animation triggers
   const headerRef = useRef<HTMLDivElement>(null)
@@ -85,6 +89,12 @@ const HowItWorks = () => {
             const newSet = new Set(prev)
             if (entry.isIntersecting) {
               newSet.add(sectionId)
+              // Mark section as animated when it becomes visible for the first time
+              setAnimatedSections(prevAnimated => {
+                const newAnimatedSet = new Set(prevAnimated)
+                newAnimatedSet.add(sectionId)
+                return newAnimatedSet
+              })
             } else {
               newSet.delete(sectionId)
             }
@@ -115,6 +125,19 @@ const HowItWorks = () => {
     }
   }, [])
 
+  // Prevent body scroll when popup is open
+  useEffect(() => {
+    if (popupOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [popupOpen])
+
   const mainScreenshots: Screenshot[] = [
     { src: "/screenshots/calculator_options_thumb.png", alt: "Home Screen", title: "Choose Calculator" },
     { src: "/screenshots/preloaded_thumb.png", alt: "Preloaded Calculator", title: "Preloaded Option" },
@@ -144,7 +167,6 @@ const scrollToSlide = useCallback((
     behavior: 'smooth'
   })
 }, [])
-
 
   // Simplified and optimized scroll handler
   const handleScroll = useCallback((
@@ -186,6 +208,7 @@ const scrollToSlide = useCallback((
     const preloadedRef = preloadedCarouselRef.current
     const standardRef = standardCarouselRef.current
     const desktopRef = desktopCarouselRef.current
+    const popupRef = popupCarouselRef.current
 
     // Create throttled handlers
 const handleMainScroll = createThrottledHandler(mainCarouselRef as React.RefObject<HTMLDivElement>, setActiveSlide, mainScreenshots.length)
@@ -228,6 +251,40 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
     }
   }, [createThrottledHandler, mainScreenshots.length, preloadedScreenshots.length, standardScreenshots.length])
 
+  const getCurrentPopupScreenshots = () => {
+    switch (popupOpen) {
+      case 'main':
+        return mainScreenshots
+      case 'preloaded':
+        return preloadedScreenshots
+      case 'standard':
+        return standardScreenshots
+      default:
+        return []
+    }
+  }
+
+  const getCurrentPopupTitle = () => {
+    switch (popupOpen) {
+      case 'main':
+        return 'Choose Calculator'
+      case 'preloaded':
+        return 'Preloaded GPA Calculator'
+      case 'standard':
+        return 'Standard GPA Calculator'
+      default:
+        return ''
+    }
+  }
+
+  const openPopup = (type: string) => {
+    setPopupOpen(type)
+  }
+
+  const closePopup = () => {
+    setPopupOpen(null)
+  }
+
   const GlassChevron: React.FC<GlassChevronProps> = ({ direction, onClick }) => (
     <button
       onClick={onClick}
@@ -266,7 +323,7 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
   )
 
   const SectionDivider = () => (
-    <div className="flex justify-center my-16">
+    <div className="flex justify-center my-8 md:my-16">
       <div className="w-32 h-0.5 bg-[#4580A7]"></div>
     </div>
   )
@@ -297,53 +354,163 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
     </div>
   )
 
-  const StaticImage: React.FC<StaticImageProps> = ({ 
-    src, 
-    alt, 
-    width, 
-    height, 
-    className = "", 
-    title 
-  }) => (
-    <div>
-      <Image
-        src={src}
-        alt={alt}
-        width={width}
-        height={height}
-        className={className}
-        priority={false}
-        loading="lazy"
-      />
-      {title && (
-        <p className="text-center text-gray-700 font-medium mt-3">
-          {title}
-        </p>
-      )}
-    </div>
-  )
-
   const AnimatedBadge: React.FC<AnimatedBadgeProps> = ({ type }) => (
-    <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium flex items-center justify-center text-center">
+    <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-[#3a6b8a] flex items-center justify-center text-center">
       {type}
     </div>
   )
 
+  const MobileCard = ({ title, description, onClick }: { title: string; description: string; onClick: () => void }) => (
+    <div 
+      onClick={onClick}
+      className="bg-white rounded-xl shadow-lg p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95 border border-gray-100"
+    >
+      <h3 className="text-lg font-semibold text-[#0A529F] text-center mb-3">{title}</h3>
+      <p className="text-sm text-gray-600 text-center leading-relaxed">{description}</p>
+    </div>
+  )
+
+  const PopupCarousel: React.FC<PopupCarouselProps> = ({ 
+    screenshots, 
+    title, 
+    isOpen, 
+    onClose 
+  }) => {
+    const [currentSlide, setCurrentSlide] = useState(0)
+    const popupRef = useRef<HTMLDivElement>(null)
+
+    // Reset slide when popup opens
+    useEffect(() => {
+      if (isOpen) {
+        setCurrentSlide(0)
+      }
+    }, [isOpen])
+
+    // Handle scroll for popup carousel
+    useEffect(() => {
+      const handlePopupScroll = () => {
+        if (!popupRef.current) return
+        
+        const slideWidth = popupRef.current.offsetWidth
+        const scrollLeft = popupRef.current.scrollLeft
+        const currentIndex = Math.round(scrollLeft / slideWidth)
+        const clampedIndex = Math.max(0, Math.min(screenshots.length - 1, currentIndex))
+        
+        setCurrentSlide(clampedIndex)
+      }
+
+      const popupElement = popupRef.current
+      if (popupElement) {
+        popupElement.addEventListener('scroll', handlePopupScroll, { passive: true })
+        return () => {
+          popupElement.removeEventListener('scroll', handlePopupScroll)
+        }
+      }
+    }, [screenshots.length])
+
+    const scrollToSlide = (index: number) => {
+      if (!popupRef.current) return
+      
+      const slideWidth = popupRef.current.offsetWidth
+      popupRef.current.scrollTo({
+        left: index * slideWidth,
+        behavior: 'smooth'
+      })
+    }
+
+    const handlePrevious = () => {
+      const newIndex = Math.max(0, currentSlide - 1)
+      scrollToSlide(newIndex)
+    }
+
+    const handleNext = () => {
+      const newIndex = Math.min(screenshots.length - 1, currentSlide + 1)
+      scrollToSlide(newIndex)
+    }
+
+    if (!isOpen) return null
+
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 truncate">{title}</h3>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
+
+          {/* Carousel */}
+          <div className="relative">
+            <div 
+              ref={popupRef}
+              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+              style={{ 
+                scrollbarWidth: 'none', 
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              {screenshots.map((screenshot, index) => (
+                <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center p-4">
+                  <Image
+                    src={screenshot.src}
+                    alt={screenshot.alt}
+                    width={250}
+                    height={500}
+                    className="drop-shadow-xl transition-transform duration-300"
+                    priority={false}
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+            
+            {screenshots.length > 1 && (
+              <>
+                <GlassChevron 
+                  direction="left" 
+                  onClick={handlePrevious}
+                />
+                <GlassChevron 
+                  direction="right" 
+                  onClick={handleNext}
+                />
+              </>
+            )}
+          </div>
+          
+          {screenshots.length > 1 && (
+            <ScrollIndicators 
+              total={screenshots.length} 
+              active={currentSlide} 
+              className="p-4"
+            />
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <section id="how-it-works" className="py-20 bg-gray-50">
+    <section id="how-it-works" className="py-12 md:py-20 bg-gray-50">
       <Container>
         <div 
           ref={headerRef}
           data-section="header"
-          className={`text-center mb-16 md:transition-all md:duration-1000 ${
-            visibleSections.has('header') ? 'md:opacity-100 md:translate-y-0' : 'md:opacity-0 md:translate-y-8'
+          className={`text-center mb-8 md:mb-16 transition-all duration-1000 ${
+            animatedSections.has('header') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
             How It Works
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Choose Your GPA Calculator
+            Tap to view screenshots
           </p>
         </div>
 
@@ -352,17 +519,17 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
           ref={desktopScreenshotsRef}
           data-section="desktop-screenshots"
           className={`hidden md:flex justify-center items-center gap-8 mb-16 transition-all duration-1000 ${
-            visibleSections.has('desktop-screenshots') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            animatedSections.has('desktop-screenshots') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
           {mainScreenshots.map((screenshot, index) => (
             <div 
               key={index} 
               className={`flex-shrink-0 transition-all duration-1000 ${
-                visibleSections.has('desktop-screenshots') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                animatedSections.has('desktop-screenshots') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
               style={{ 
-                transitionDelay: visibleSections.has('desktop-screenshots') ? `${index * 150}ms` : '0ms' 
+                transitionDelay: animatedSections.has('desktop-screenshots') ? `${index * 150}ms` : '0ms' 
               }}
             >
               <AnimatedImage
@@ -377,71 +544,31 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
           ))}
         </div>
 
-        {/* Mobile: Swipeable Carousel with Chevrons */}
+        {/* Mobile: Cards instead of carousel */}
         <div 
           ref={mobileCarouselRef}
           data-section="mobile-carousel"
-          className="md:hidden mb-8"
-        >
-          <div className="relative">
-            <div 
-              ref={mainCarouselRef}
-              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-              style={{ 
-                scrollbarWidth: 'none', 
-                msOverflowStyle: 'none',
-                WebkitOverflowScrolling: 'touch'
-              }}
-            >
-              {mainScreenshots.map((screenshot, index) => (
-                <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                  <StaticImage
-                    src={screenshot.src}
-                    alt={screenshot.alt}
-                    width={200}
-                    height={400}
-                    className="drop-shadow-xl"
-                    title={screenshot.title}
-                  />
-                </div>
-              ))}
-            </div>
-            
-            <GlassChevron 
-              direction="left" 
-              onClick={() => scrollToSlide(mainCarouselRef, Math.max(0, activeSlide - 1))}
-            />
-            <GlassChevron 
-              direction="right" 
-              onClick={() => scrollToSlide(mainCarouselRef, Math.min(mainScreenshots.length - 1, activeSlide + 1))}
-            />
-          </div>
-          
-          <ScrollIndicators 
-            total={mainScreenshots.length} 
-            active={activeSlide} 
-            className="mt-4"
-          />
-        </div>
-
-        {/* Description Text */}
-        <div 
-          ref={descriptionRef}
-          data-section="description"
-          className={`max-w-4xl mx-auto text-center mb-16 md:transition-all md:duration-1000 ${
-            visibleSections.has('description') ? 'md:opacity-100 md:translate-y-0' : 'md:opacity-0 md:translate-y-8'
+          className={`md:hidden mb-4 md:mb-8 transition-all duration-1000 ${
+            animatedSections.has('mobile-carousel') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <p className="text-lg text-gray-700 mb-6">
-            <strong>The Preloaded GPA Calculator</strong> is designed for B.Tech and
-            Integrated M.Tech students of SRM IST under the 21 Regulation and newer.
-            It automatically fills in subjects and credits for you.
-          </p>
-          <p className="text-lg text-gray-700">
-            If you are not from this group or prefer to enter your details manually,
-            you can use the <strong>Standard GPA Calculator</strong> which supports
-            all degree programs.
-          </p>
+          <div className="space-y-4">
+            <MobileCard 
+              title="Choose Calculator" 
+              description="There are two options: Preloaded GPA Calculator or Standard GPA Calculator"
+              onClick={() => openPopup('main')}
+            />
+            <MobileCard 
+              title="Preloaded GPA Calculator" 
+              description="The list of subjects along with their credits and total number of semesters along with their total credits is preloaded according to the course and specialization selected by the user."
+              onClick={() => openPopup('preloaded')}
+            />
+            <MobileCard 
+              title="Standard GPA Calculator" 
+              description="The user has to manually enter the number of credits per subject, the overall total credits, the total number of subjects, and the total number of semesters."
+              onClick={() => openPopup('standard')}
+            />
+          </div>
         </div>
 
         <SectionDivider />
@@ -451,7 +578,7 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
           ref={calculatorSectionsRef}
           data-section="calculator-sections"
           className={`hidden md:block mb-2 transition-all duration-1000 ${
-            visibleSections.has('calculator-sections') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            animatedSections.has('calculator-sections') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
           <div className="relative">
@@ -470,10 +597,10 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
                     <div 
                       key={index} 
                       className={`text-center transition-all duration-1000 ${
-                        visibleSections.has('calculator-sections') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                        animatedSections.has('calculator-sections') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                       }`}
                       style={{ 
-                        transitionDelay: visibleSections.has('calculator-sections') ? `${index * 200}ms` : '0ms' 
+                        transitionDelay: animatedSections.has('calculator-sections') ? `${index * 200}ms` : '0ms' 
                       }}
                     >
                       <h4 className="text-xl font-semibold text-gray-900 mb-4">{screenshot.type}</h4>
@@ -507,10 +634,10 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
                     <div 
                       key={index} 
                       className={`text-center transition-all duration-1000 ${
-                        visibleSections.has('calculator-sections') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                        animatedSections.has('calculator-sections') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                       }`}
                       style={{ 
-                        transitionDelay: visibleSections.has('calculator-sections') ? `${index * 200}ms` : '0ms' 
+                        transitionDelay: animatedSections.has('calculator-sections') ? `${index * 200}ms` : '0ms' 
                       }}
                     >
                       <h4 className="text-xl font-semibold text-gray-900 mb-4">{screenshot.type}</h4>
@@ -550,131 +677,15 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
             className="mt-8"
           />
         </div>
-
-        {/* Mobile: Original Vertical Layout with Enhanced Carousels and No Animations */}
-        <div className="md:hidden">
-          {/* Preloaded GPA Calculator Section */}
-          <div 
-            ref={mobilePreloadedRef}
-            data-section="mobile-preloaded"
-            className="mb-16"
-          >
-            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
-              Preloaded GPA Calculator
-            </h3>
-
-            <div className="mb-8">
-              <div className="relative">
-                <div 
-                  ref={preloadedCarouselRef}
-                  className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-                  style={{ 
-                    scrollbarWidth: 'none', 
-                    msOverflowStyle: 'none',
-                    WebkitOverflowScrolling: 'touch'
-                  }}
-                >
-                  {preloadedScreenshots.map((screenshot, index) => (
-                    <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                      <AnimatedBadge type={screenshot.type || ''} />
-                      <StaticImage
-                        src={screenshot.src}
-                        alt={screenshot.alt}
-                        width={280}
-                        height={560}
-                        className="drop-shadow-xl"
-                        title={screenshot.title}
-                      />
-                    </div>
-                  ))}
-                </div>
-                
-                <GlassChevron 
-                  direction="left" 
-                  onClick={() => scrollToSlide(preloadedCarouselRef, Math.max(0, preloadedSlide - 1))}
-                />
-                <GlassChevron 
-                  direction="right" 
-                  onClick={() => scrollToSlide(preloadedCarouselRef, Math.min(preloadedScreenshots.length - 1, preloadedSlide + 1))}
-                />
-              </div>
-              
-              <ScrollIndicators 
-                total={preloadedScreenshots.length} 
-                active={preloadedSlide} 
-                className="mt-4"
-              />
-            </div>
-
-            <p className="text-center text-gray-600 mt-6 max-w-3xl mx-auto">
-              The list of subjects along with their credits and total number of semesters
-              along with their total credits is preloaded according to the course and
-              specialization selected by the user.
-            </p>
-          </div>
-
-          <SectionDivider />
-
-          {/* Standard GPA Calculator Section */}
-          <div 
-            ref={mobileStandardRef}
-            data-section="mobile-standard"
-            className="mb-16"
-          >
-            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
-              Standard GPA Calculator
-            </h3>
-
-            <div className="mb-8">
-              <div className="relative">
-                <div 
-                  ref={standardCarouselRef}
-                  className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-                  style={{ 
-                    scrollbarWidth: 'none', 
-                    msOverflowStyle: 'none',
-                    WebkitOverflowScrolling: 'touch'
-                  }}
-                >
-                  {standardScreenshots.map((screenshot, index) => (
-                    <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                      <AnimatedBadge type={screenshot.type || ''} />
-                      <StaticImage
-                        src={screenshot.src}
-                        alt={screenshot.alt}
-                        width={280}
-                        height={560}
-                        className="drop-shadow-xl"
-                        title={screenshot.title}
-                      />
-                    </div>
-                  ))}
-                </div>
-                
-                <GlassChevron 
-                  direction="left" 
-                  onClick={() => scrollToSlide(standardCarouselRef, Math.max(0, standardSlide - 1))}
-                />
-                <GlassChevron 
-                  direction="right" 
-                  onClick={() => scrollToSlide(standardCarouselRef, Math.min(standardScreenshots.length - 1, standardSlide + 1))}
-                />
-              </div>
-              
-              <ScrollIndicators 
-                total={standardScreenshots.length} 
-                active={standardSlide} 
-                className="mt-4"
-              />
-            </div>
-
-            <p className="text-center text-gray-600 mt-6 max-w-3xl mx-auto">
-              The user has to manually enter the number of credits per subject, the overall
-              total credits, the total number of subjects, and the total number of semesters.
-            </p>
-          </div>
-        </div>
       </Container>
+
+      {/* Mobile Popup Carousel */}
+      <PopupCarousel
+        screenshots={getCurrentPopupScreenshots()}
+        title={getCurrentPopupTitle()}
+        isOpen={!!popupOpen}
+        onClose={closePopup}
+      />
 
       <style jsx>{`
         .scrollbar-hide {
