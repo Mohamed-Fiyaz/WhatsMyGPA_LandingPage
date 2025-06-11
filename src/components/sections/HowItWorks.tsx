@@ -90,7 +90,7 @@ const HowItWorks = () => {
   ]
 
   const preloadedScreenshots: Screenshot[] = [
-    { src: "/screenshots/preloaded_sgpa.png", alt: "SGPA Calculator", title: "SGPA", type: "SGPA" },
+    { src: "/screenshots/preloaded_SGPA_thumb.png", alt: "SGPA Calculator", title: "SGPA", type: "SGPA" },
     { src: "/screenshots/preloaded_cgpa_thumb.png", alt: "CGPA Calculator", title: "CGPA", type: "CGPA" }
   ]
 
