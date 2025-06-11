@@ -239,9 +239,8 @@ alt="What&#39;s My GPA Mascot"
                     className={cn(
                       "block w-full text-left px-4 py-3 transition-all duration-200 font-inter hover:bg-white/10 rounded-lg mx-2",
                       "transform hover:translate-x-2",
-                      isScrolled 
-                        ? "text-gray-800 hover:text-[#0A529F]" 
-                        : "text-white hover:text-[#0A529F]"
+"lg:text-white text-gray-800 hover:text-[#0A529F]"
+
                     )}
                     style={{
                       transitionDelay: `${index * 50}ms`

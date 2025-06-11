@@ -154,14 +154,15 @@ alt="What&#39;s My GPA Mascot"
 <p className="text-gray-400 text-xs sm:text-sm text-center sm:text-left">© {new Date().getFullYear()} What&#39;s My GPA. All rights reserved.</p>
 
               <div className="flex items-center gap-4 sm:gap-6">
+<a 
+  href="/privacy_policy.html" 
+  className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors whitespace-nowrap"
+>
+  Privacy Policy
+</a>
+
                 <a 
-                  href="#" 
-                  className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors whitespace-nowrap"
-                >
-                  Privacy Policy
-                </a>
-                <a 
-                  href="#" 
+                  href="/terms_of_service.html" 
                   className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors whitespace-nowrap"
                 >
                   Terms of Service

@@ -40,9 +40,10 @@ const HowItWorks = () => {
   const [activeSlide, setActiveSlide] = useState(0)
   const [preloadedSlide, setPreloadedSlide] = useState(0)
   const [standardSlide, setStandardSlide] = useState(0)
-  const [desktopSection, setDesktopSection] = useState(0) // 0 = preloaded, 1 = standard
+  const [desktopSection, setDesktopSection] = useState(0)
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
   
+  // Fixed ref types - using proper HTMLDivElement type
   const mainCarouselRef = useRef<HTMLDivElement>(null)
   const preloadedCarouselRef = useRef<HTMLDivElement>(null)
   const standardCarouselRef = useRef<HTMLDivElement>(null)
@@ -57,43 +58,52 @@ const HowItWorks = () => {
   const mobilePreloadedRef = useRef<HTMLDivElement>(null)
   const mobileStandardRef = useRef<HTMLDivElement>(null)
 
-  // Debounced scroll handlers to prevent excessive updates
-  const debounce = useCallback(
-    <T extends unknown[]>(func: (...args: T) => void, wait: number) => {
-      let timeout: NodeJS.Timeout
-      return (...args: T) => {
-        clearTimeout(timeout)
-        timeout = setTimeout(() => func(...args), wait)
-      }
-    },
-    []
-  )
+  // Timeout refs for cleanup
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Intersection Observer for scroll animations with improved settings
+  // Intersection Observer with stable settings
   useEffect(() => {
     const observerOptions = {
-      threshold: 0.2, // Increased threshold to reduce flickering
-      rootMargin: '0px 0px -20px 0px' // Reduced margin for more stable triggering
+      threshold: 0.15,
+      rootMargin: '50px 0px -50px 0px'
     }
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         const sectionId = entry.target.getAttribute('data-section')
         if (sectionId) {
-          if (entry.isIntersecting) {
-            setVisibleSections(prev => new Set([...Array.from(prev), sectionId]))
-          }
-          // Don't remove sections once they're visible to prevent re-triggering animations
+          setVisibleSections(prev => {
+            const newSet = new Set(prev)
+            if (entry.isIntersecting) {
+              newSet.add(sectionId)
+            } else {
+              newSet.delete(sectionId)
+            }
+            return newSet
+          })
         }
       })
     }, observerOptions)
 
-    const sections = [headerRef, desktopScreenshotsRef, mobileCarouselRef, descriptionRef, calculatorSectionsRef, mobilePreloadedRef, mobileStandardRef]
+    const sections = [
+      headerRef,
+      desktopScreenshotsRef,
+      mobileCarouselRef,
+      descriptionRef,
+      calculatorSectionsRef,
+      mobilePreloadedRef,
+      mobileStandardRef
+    ]
+
     sections.forEach(ref => {
-      if (ref.current) observer.observe(ref.current)
+      if (ref.current) {
+        observer.observe(ref.current)
+      }
     })
 
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+    }
   }, [])
 
   const mainScreenshots: Screenshot[] = [
@@ -112,41 +122,55 @@ const HowItWorks = () => {
     { src: "/screenshots/standard_cgpa_thumb.png", alt: "Standard CGPA Calculator", title: "CGPA", type: "CGPA" }
   ]
 
-  const scrollToSlide = (ref: React.RefObject<HTMLDivElement | null>, index: number) => {
-    if (ref.current) {
-      const slideWidth = ref.current.offsetWidth
-      ref.current.scrollTo({
-        left: index * slideWidth,
-        behavior: 'smooth'
-      })
-    }
-  }
+  // Fixed scroll function with proper null checking and typing
+const scrollToSlide = useCallback((
+  ref: React.RefObject<HTMLDivElement | null>, 
+  index: number
+) => {
+  if (!ref.current) return
 
-  // Debounced scroll handlers
-  const debouncedHandleScroll = useCallback(
-    (ref: React.RefObject<HTMLDivElement | null>, setSlide: (value: number) => void) => {
-      const debouncedFn = debounce((slideRef: React.RefObject<HTMLDivElement | null>, setSlideFn: (value: number) => void) => {
-        if (slideRef.current) {
-          const slideWidth = slideRef.current.offsetWidth
-          const currentIndex = Math.round(slideRef.current.scrollLeft / slideWidth)
-          setSlideFn(currentIndex)
-        }
-      }, 50)
-      return debouncedFn(ref, setSlide)
-    },
-    [debounce]
-  )
+  const slideWidth = ref.current.offsetWidth
+  ref.current.scrollTo({
+    left: index * slideWidth,
+    behavior: 'smooth'
+  })
+}, [])
 
-  const debouncedHandleDesktopScroll = useCallback(() => {
-    const debouncedFn = debounce(() => {
-      if (desktopCarouselRef.current) {
-        const slideWidth = desktopCarouselRef.current.offsetWidth
-        const currentIndex = Math.round(desktopCarouselRef.current.scrollLeft / slideWidth)
-        setDesktopSection(currentIndex)
+
+  // Simplified and optimized scroll handler
+  const handleScroll = useCallback((
+    ref: React.RefObject<HTMLDivElement>, 
+    setSlide: (value: number) => void,
+    totalSlides: number
+  ) => {
+    if (!ref.current) return
+    
+    const slideWidth = ref.current.offsetWidth
+    const scrollLeft = ref.current.scrollLeft
+    const currentIndex = Math.round(scrollLeft / slideWidth)
+    const clampedIndex = Math.max(0, Math.min(totalSlides - 1, currentIndex))
+    
+    setSlide(clampedIndex)
+  }, [])
+
+  // Throttled scroll handlers to prevent flickering
+  const createThrottledHandler = useCallback((
+    ref: React.RefObject<HTMLDivElement>,
+    setSlide: (value: number) => void,
+    totalSlides: number
+  ) => {
+    let ticking = false
+    
+    return () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll(ref, setSlide, totalSlides)
+          ticking = false
+        })
+        ticking = true
       }
-    }, 50)
-    return debouncedFn()
-  }, [debounce])
+    }
+  }, [handleScroll])
 
   useEffect(() => {
     const mainRef = mainCarouselRef.current
@@ -154,22 +178,46 @@ const HowItWorks = () => {
     const standardRef = standardCarouselRef.current
     const desktopRef = desktopCarouselRef.current
 
-    const handleMainScroll = () => debouncedHandleScroll(mainCarouselRef, setActiveSlide)
-    const handlePreloadedScroll = () => debouncedHandleScroll(preloadedCarouselRef, setPreloadedSlide)
-    const handleStandardScroll = () => debouncedHandleScroll(standardCarouselRef, setStandardSlide)
+    // Create throttled handlers
+const handleMainScroll = createThrottledHandler(mainCarouselRef as React.RefObject<HTMLDivElement>, setActiveSlide, mainScreenshots.length)
+const handlePreloadedScroll = createThrottledHandler(preloadedCarouselRef as React.RefObject<HTMLDivElement>, setPreloadedSlide, preloadedScreenshots.length)
+const handleStandardScroll = createThrottledHandler(standardCarouselRef as React.RefObject<HTMLDivElement>, setStandardSlide, standardScreenshots.length)
+const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.RefObject<HTMLDivElement>, setDesktopSection, 2)
 
-    if (mainRef) mainRef.addEventListener('scroll', handleMainScroll, { passive: true })
-    if (preloadedRef) preloadedRef.addEventListener('scroll', handlePreloadedScroll, { passive: true })
-    if (standardRef) standardRef.addEventListener('scroll', handleStandardScroll, { passive: true })
-    if (desktopRef) desktopRef.addEventListener('scroll', debouncedHandleDesktopScroll, { passive: true })
+    // Add event listeners with passive flag for better performance
+    if (mainRef) {
+      mainRef.addEventListener('scroll', handleMainScroll, { passive: true })
+    }
+    if (preloadedRef) {
+      preloadedRef.addEventListener('scroll', handlePreloadedScroll, { passive: true })
+    }
+    if (standardRef) {
+      standardRef.addEventListener('scroll', handleStandardScroll, { passive: true })
+    }
+    if (desktopRef) {
+      desktopRef.addEventListener('scroll', handleDesktopScroll, { passive: true })
+    }
 
     return () => {
-      if (mainRef) mainRef.removeEventListener('scroll', handleMainScroll)
-      if (preloadedRef) preloadedRef.removeEventListener('scroll', handlePreloadedScroll)
-      if (standardRef) standardRef.removeEventListener('scroll', handleStandardScroll)
-      if (desktopRef) desktopRef.removeEventListener('scroll', debouncedHandleDesktopScroll)
+      if (mainRef) {
+        mainRef.removeEventListener('scroll', handleMainScroll)
+      }
+      if (preloadedRef) {
+        preloadedRef.removeEventListener('scroll', handlePreloadedScroll)
+      }
+      if (standardRef) {
+        standardRef.removeEventListener('scroll', handleStandardScroll)
+      }
+      if (desktopRef) {
+        desktopRef.removeEventListener('scroll', handleDesktopScroll)
+      }
+      
+      // Cleanup timeouts
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
     }
-  }, [debouncedHandleScroll, debouncedHandleDesktopScroll])
+  }, [createThrottledHandler, mainScreenshots.length, preloadedScreenshots.length, standardScreenshots.length])
 
   const GlassChevron: React.FC<GlassChevronProps> = ({ direction, onClick }) => (
     <button
@@ -177,16 +225,18 @@ const HowItWorks = () => {
       className={`absolute top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full 
         backdrop-blur-md bg-white/30 border border-white/50 shadow-lg
         flex items-center justify-center transition-all duration-300
-        md:hover:bg-white/40 md:hover:shadow-xl md:hover:scale-105 
-        opacity-90 md:hover:opacity-100
-        active:scale-95 transform-gpu touch-manipulation
+        hover:bg-white/40 hover:shadow-xl hover:scale-105 
+        opacity-90 hover:opacity-100
+        active:scale-95 touch-manipulation
         ${direction === 'left' ? 'left-4' : 'right-4'}
       `}
+      type="button"
+      aria-label={`Navigate ${direction}`}
     >
       {direction === 'left' ? (
-        <ChevronLeft className="w-6 h-6 text-gray-700 md:hover:text-[#4580A7] transition-colors duration-300" />
+        <ChevronLeft className="w-6 h-6 text-gray-700 hover:text-[#4580A7] transition-colors duration-300" />
       ) : (
-        <ChevronRight className="w-6 h-6 text-gray-700 md:hover:text-[#4580A7] transition-colors duration-300" />
+        <ChevronRight className="w-6 h-6 text-gray-700 hover:text-[#4580A7] transition-colors duration-300" />
       )}
     </button>
   )
@@ -196,10 +246,10 @@ const HowItWorks = () => {
       {Array.from({ length: total }).map((_, index) => (
         <div
           key={index}
-          className={`w-2 h-2 rounded-full transition-all duration-500 transform-gpu ${
+          className={`w-2 h-2 rounded-full transition-all duration-300 ${
             index === active 
               ? 'bg-[#4580A7] scale-125 shadow-lg' 
-              : 'bg-gray-300 md:hover:bg-gray-400 md:hover:scale-110'
+              : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
           }`}
         />
       ))}
@@ -208,23 +258,30 @@ const HowItWorks = () => {
 
   const SectionDivider = () => (
     <div className="flex justify-center my-16">
-      <div className="w-32 h-0.5 bg-[#4580A7] animate-pulse"></div>
+      <div className="w-32 h-0.5 bg-[#4580A7]"></div>
     </div>
   )
 
-  const AnimatedImage: React.FC<AnimatedImageProps> = ({ src, alt, width, height, className = "", title }) => (
+  const AnimatedImage: React.FC<AnimatedImageProps> = ({ 
+    src, 
+    alt, 
+    width, 
+    height, 
+    className = "", 
+    title 
+  }) => (
     <div className="group">
       <Image
         src={src}
         alt={alt}
         width={width}
         height={height}
-        className={`transition-all duration-300 transform-gpu md:group-hover:scale-105 ${className}`}
+        className={`transition-transform duration-300 group-hover:scale-105 ${className}`}
         priority={false}
         loading="lazy"
       />
       {title && (
-        <p className="text-center text-gray-700 font-medium mt-3 transition-colors duration-300 md:group-hover:text-[#4580A7]">
+        <p className="text-center text-gray-700 font-medium mt-3 transition-colors duration-300 group-hover:text-[#4580A7]">
           {title}
         </p>
       )}
@@ -232,7 +289,7 @@ const HowItWorks = () => {
   )
 
   const AnimatedBadge: React.FC<AnimatedBadgeProps> = ({ type }) => (
-    <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium transition-all duration-300 transform-gpu md:hover:scale-105 md:hover:shadow-lg md:hover:bg-[#3a6b8a] flex items-center justify-center text-center">
+    <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-[#3a6b8a] flex items-center justify-center text-center">
       {type}
     </div>
   )
@@ -243,7 +300,7 @@ const HowItWorks = () => {
         <div 
           ref={headerRef}
           data-section="header"
-          className={`text-center mb-16 transition-all duration-1000 transform ${
+          className={`text-center mb-16 transition-all duration-1000 ${
             visibleSections.has('header') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
@@ -259,17 +316,19 @@ const HowItWorks = () => {
         <div 
           ref={desktopScreenshotsRef}
           data-section="desktop-screenshots"
-          className={`hidden md:flex justify-center items-center gap-8 mb-16 transition-all duration-1000 transform ${
+          className={`hidden md:flex justify-center items-center gap-8 mb-16 transition-all duration-1000 ${
             visibleSections.has('desktop-screenshots') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
           {mainScreenshots.map((screenshot, index) => (
             <div 
               key={index} 
-              className={`flex-shrink-0 transition-all duration-1000 transform ${
+              className={`flex-shrink-0 transition-all duration-1000 ${
                 visibleSections.has('desktop-screenshots') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
-              style={{ transitionDelay: visibleSections.has('desktop-screenshots') ? `${index * 150}ms` : '0ms' }}
+              style={{ 
+                transitionDelay: visibleSections.has('desktop-screenshots') ? `${index * 150}ms` : '0ms' 
+              }}
             >
               <AnimatedImage
                 src={screenshot.src}
@@ -287,7 +346,7 @@ const HowItWorks = () => {
         <div 
           ref={mobileCarouselRef}
           data-section="mobile-carousel"
-          className={`md:hidden mb-8 transition-all duration-1000 transform will-change-transform ${
+          className={`md:hidden mb-8 transition-all duration-1000 ${
             visibleSections.has('mobile-carousel') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
@@ -303,16 +362,14 @@ const HowItWorks = () => {
             >
               {mainScreenshots.map((screenshot, index) => (
                 <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                  <div className="will-change-transform">
-                    <AnimatedImage
-                      src={screenshot.src}
-                      alt={screenshot.alt}
-                      width={200}
-                      height={400}
-                      className="drop-shadow-xl"
-                      title={screenshot.title}
-                    />
-                  </div>
+                  <AnimatedImage
+                    src={screenshot.src}
+                    alt={screenshot.alt}
+                    width={200}
+                    height={400}
+                    className="drop-shadow-xl"
+                    title={screenshot.title}
+                  />
                 </div>
               ))}
             </div>
@@ -338,7 +395,7 @@ const HowItWorks = () => {
         <div 
           ref={descriptionRef}
           data-section="description"
-          className={`max-w-4xl mx-auto text-center mb-16 transition-all duration-1000 transform ${
+          className={`max-w-4xl mx-auto text-center mb-16 transition-all duration-1000 ${
             visibleSections.has('description') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
@@ -360,7 +417,7 @@ const HowItWorks = () => {
         <div 
           ref={calculatorSectionsRef}
           data-section="calculator-sections"
-          className={`hidden md:block mb-2 transition-all duration-1000 transform ${
+          className={`hidden md:block mb-2 transition-all duration-1000 ${
             visibleSections.has('calculator-sections') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
@@ -379,10 +436,12 @@ const HowItWorks = () => {
                   {preloadedScreenshots.map((screenshot, index) => (
                     <div 
                       key={index} 
-                      className={`text-center transition-all duration-1000 transform ${
+                      className={`text-center transition-all duration-1000 ${
                         visibleSections.has('calculator-sections') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                       }`}
-                      style={{ transitionDelay: visibleSections.has('calculator-sections') ? `${index * 200}ms` : '0ms' }}
+                      style={{ 
+                        transitionDelay: visibleSections.has('calculator-sections') ? `${index * 200}ms` : '0ms' 
+                      }}
                     >
                       <h4 className="text-xl font-semibold text-gray-900 mb-4">{screenshot.type}</h4>
                       <div className="flex justify-center">
@@ -414,10 +473,12 @@ const HowItWorks = () => {
                   {standardScreenshots.map((screenshot, index) => (
                     <div 
                       key={index} 
-                      className={`text-center transition-all duration-1000 transform ${
+                      className={`text-center transition-all duration-1000 ${
                         visibleSections.has('calculator-sections') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                       }`}
-                      style={{ transitionDelay: visibleSections.has('calculator-sections') ? `${index * 200}ms` : '0ms' }}
+                      style={{ 
+                        transitionDelay: visibleSections.has('calculator-sections') ? `${index * 200}ms` : '0ms' 
+                      }}
                     >
                       <h4 className="text-xl font-semibold text-gray-900 mb-4">{screenshot.type}</h4>
                       <div className="flex justify-center">
@@ -463,7 +524,7 @@ const HowItWorks = () => {
           <div 
             ref={mobilePreloadedRef}
             data-section="mobile-preloaded"
-            className={`mb-16 transition-all duration-1000 transform will-change-transform ${
+            className={`mb-16 transition-all duration-1000 ${
               visibleSections.has('mobile-preloaded') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
@@ -484,17 +545,15 @@ const HowItWorks = () => {
                 >
                   {preloadedScreenshots.map((screenshot, index) => (
                     <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                      <div className="will-change-transform">
-                        <AnimatedBadge type={screenshot.type || ''} />
-                        <AnimatedImage
-                          src={screenshot.src}
-                          alt={screenshot.alt}
-                          width={280}
-                          height={560}
-                          className="drop-shadow-xl"
-                          title={screenshot.title}
-                        />
-                      </div>
+                      <AnimatedBadge type={screenshot.type || ''} />
+                      <AnimatedImage
+                        src={screenshot.src}
+                        alt={screenshot.alt}
+                        width={280}
+                        height={560}
+                        className="drop-shadow-xl"
+                        title={screenshot.title}
+                      />
                     </div>
                   ))}
                 </div>
@@ -529,7 +588,7 @@ const HowItWorks = () => {
           <div 
             ref={mobileStandardRef}
             data-section="mobile-standard"
-            className={`transition-all duration-1000 transform will-change-transform ${
+            className={`transition-all duration-1000 ${
               visibleSections.has('mobile-standard') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
@@ -550,17 +609,15 @@ const HowItWorks = () => {
                 >
                   {standardScreenshots.map((screenshot, index) => (
                     <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                      <div className="will-change-transform">
-                        <AnimatedBadge type={screenshot.type || ''} />
-                        <AnimatedImage
-                          src={screenshot.src}
-                          alt={screenshot.alt}
-                          width={280}
-                          height={560}
-                          className="drop-shadow-xl"
-                          title={screenshot.title}
-                        />
-                      </div>
+                      <AnimatedBadge type={screenshot.type || ''} />
+                      <AnimatedImage
+                        src={screenshot.src}
+                        alt={screenshot.alt}
+                        width={280}
+                        height={560}
+                        className="drop-shadow-xl"
+                        title={screenshot.title}
+                      />
                     </div>
                   ))}
                 </div>

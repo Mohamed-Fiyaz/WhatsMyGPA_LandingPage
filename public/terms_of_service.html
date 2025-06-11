@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What&apos;s My GPA? - Terms of Service</title>
+  <style>
+    :root {
+      --primary-color: #0a529f;
+      --secondary-color: #4580a7;
+      --text-color: #333;
+      --container-bg: #fff;
+      --shadow-color: rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(180deg, #4580A7 0%, #C0D6DF 100%);
+      color: var(--text-color);
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background-color: var(--container-bg);
+      border-radius: 8px;
+      box-shadow: 0 4px 6px var(--shadow-color);
+    }
+
+    h1 {
+      color: var(--primary-color);
+      margin-top: 0;
+    }
+
+    h2 {
+      color: var(--secondary-color);
+      margin-top: 2rem;
+    }
+
+    p, li {
+      margin-bottom: 1rem;
+    }
+
+    ul {
+      padding-left: 1.2rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: black;
+    }
+
+    .back-button {
+      display: inline-block;
+      margin-bottom: 1rem;
+      padding: 0.5rem 1rem;
+      background-color: var(--primary-color);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: background-color 0.2s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="javascript:history.back()" class="back-button" aria-label="Go back to previous page">⬅ Go Back</a>
+    <h1>Terms of Service</h1>
+    <p><strong>Effective Date:</strong> 11/6/2025</p>
+    <p>Welcome to What&apos;s My GPA? By using this iOS application, you agree to the following terms and conditions. Please read them carefully.</p>
+
+    <h2>1. Overview</h2>
+    <p>What&apos;s My GPA? is an offline GPA calculator designed specifically for students of SRM Institute of Science and Technology (SRM IST). It enables students under the 21 Regulation and later to calculate their SGPA and CGPA accurately using a preloaded calculator, while also offering a manual standard calculator for students outside this category.</p>
+
+    <h2>2. Acceptance of Terms</h2>
+    <p>By using this application, you accept these Terms of Service. If you do not agree, please do not use the app.</p>
+
+    <h2>3. No Account or Data Collection</h2>
+    <p>This app is completely offline and does not collect, store, or transmit any personal data. No user accounts or internet connection are required.</p>
+
+    <h2>4. Accuracy of Calculations</h2>
+    <p>The app is based on SRM IST&apos;s official grading system and aims to provide 100% accurate SGPA and CGPA calculations. However:</p>
+    <ul>
+      <li>It is your responsibility to ensure the correctness of the grades and course selections entered.</li>
+      <li>The app&apos;s results are for informational purposes only and do not substitute official university records.</li>
+    </ul>
+
+    <h2>5. Intended Audience</h2>
+    <p>This app is specifically intended for B.Tech and Integrated M.Tech students of SRM IST, especially those under the 21 Regulation or later. Other users may use the standard calculator feature at their own discretion.</p>
+
+    <h2>6. Intellectual Property</h2>
+    <p>All app content, including UI design, logic, and functionality, is the intellectual property of the developer. Unauthorized reproduction, reverse-engineering, or redistribution is prohibited.</p>
+
+    <h2>7. Limitations of Liability</h2>
+    <p>The developer shall not be held liable for:</p>
+    <ul>
+      <li>Any errors or inaccuracies in SGPA/CGPA outputs due to incorrect user input.</li>
+      <li>Any decisions made by the user based on the results provided by the app.</li>
+      <li>Any academic or institutional consequences resulting from use of this app.</li>
+    </ul>
+
+    <h2>8. Changes to the Terms</h2>
+    <p>These Terms of Service may be updated occasionally. Continued use of the app after changes are made constitutes your acceptance of the new terms.</p>
+
+    <h2>9. Contact</h2>
+    <p>If you have questions or suggestions, feel free to contact the developer at:<br>
+      <a href="mailto:whatsmygpa.app@gmail.com">whatsmygpa.app@gmail.com</a>
+    </p>
+  </div>
+
+  <footer>
+    &copy; <span id="year"></span> What&apos;s My GPA. All rights reserved.
+  </footer>
+
+  <script>
+    // Dynamically update the year
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
