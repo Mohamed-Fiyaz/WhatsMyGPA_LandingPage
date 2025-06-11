@@ -103,11 +103,9 @@ const FAQ = () => {
                 <h3 className="text-lg font-semibold text-gray-900 pr-4 group-hover:text-[#4580A7] transition-colors duration-300">
                   {faq.question}
                 </h3>
-                <div className={`flex-shrink-0 transition-all duration-300 ease-out ${
-                  openItems.includes(faq.id) ? 'rotate-180' : 'rotate-0'
-                }`}>
+                <div className="flex-shrink-0">
                   {openItems.includes(faq.id) ? (
-                    <ChevronUp size={24} className="text-[#4580A7]" />
+                    <ChevronUp size={24} className="text-[#4580A7] transition-all duration-300" />
                   ) : (
                     <ChevronDown size={24} className="text-gray-400 group-hover:text-[#4580A7] transition-colors duration-300" />
                   )}
