@@ -324,7 +324,7 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
   )
 
   const AnimatedBadge: React.FC<AnimatedBadgeProps> = ({ type }) => (
-    <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium flex items-center justify-center text-center md:transition-all md:duration-300 md:hover:scale-105 md:hover:shadow-lg md:hover:bg-[#3a6b8a]">
+    <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium flex items-center justify-center text-center">
       {type}
     </div>
   )
@@ -335,8 +335,8 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
         <div 
           ref={headerRef}
           data-section="header"
-          className={`text-center mb-16 transition-all duration-1000 ${
-            visibleSections.has('header') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          className={`text-center mb-16 md:transition-all md:duration-1000 ${
+            visibleSections.has('header') ? 'md:opacity-100 md:translate-y-0' : 'md:opacity-0 md:translate-y-8'
           }`}
         >
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -428,8 +428,8 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
         <div 
           ref={descriptionRef}
           data-section="description"
-          className={`max-w-4xl mx-auto text-center mb-16 transition-all duration-1000 ${
-            visibleSections.has('description') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          className={`max-w-4xl mx-auto text-center mb-16 md:transition-all md:duration-1000 ${
+            visibleSections.has('description') ? 'md:opacity-100 md:translate-y-0' : 'md:opacity-0 md:translate-y-8'
           }`}
         >
           <p className="text-lg text-gray-700 mb-6">
@@ -551,7 +551,7 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
           />
         </div>
 
-        {/* Mobile: Original Vertical Layout with Enhanced Carousels and Animations */}
+        {/* Mobile: Original Vertical Layout with Enhanced Carousels and No Animations */}
         <div className="md:hidden">
           {/* Preloaded GPA Calculator Section */}
           <div 
