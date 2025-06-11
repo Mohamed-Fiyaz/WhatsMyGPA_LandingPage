@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Container from '@/components/ui/Container'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 interface Screenshot {
   src: string
@@ -57,20 +57,30 @@ const HowItWorks = () => {
   const mobilePreloadedRef = useRef<HTMLDivElement>(null)
   const mobileStandardRef = useRef<HTMLDivElement>(null)
 
-  // Intersection Observer for scroll animations
+  // Debounced scroll handlers to prevent excessive updates
+  const debounce = useCallback((func: Function, wait: number) => {
+    let timeout: NodeJS.Timeout
+    return (...args: any[]) => {
+      clearTimeout(timeout)
+      timeout = setTimeout(() => func(...args), wait)
+    }
+  }, [])
+
+  // Intersection Observer for scroll animations with improved settings
   useEffect(() => {
     const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
+      threshold: 0.2, // Increased threshold to reduce flickering
+      rootMargin: '0px 0px -20px 0px' // Reduced margin for more stable triggering
     }
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const sectionId = entry.target.getAttribute('data-section')
-          if (sectionId) {
+        const sectionId = entry.target.getAttribute('data-section')
+        if (sectionId) {
+          if (entry.isIntersecting) {
             setVisibleSections(prev => new Set([...Array.from(prev), sectionId]))
           }
+          // Don't remove sections once they're visible to prevent re-triggering animations
         }
       })
     }, observerOptions)
@@ -109,21 +119,28 @@ const HowItWorks = () => {
     }
   }
 
-  const handleScroll = (ref: React.RefObject<HTMLDivElement | null>, setSlide: React.Dispatch<React.SetStateAction<number>>) => {
-    if (ref.current) {
-      const slideWidth = ref.current.offsetWidth
-      const currentIndex = Math.round(ref.current.scrollLeft / slideWidth)
-      setSlide(currentIndex)
-    }
-  }
+  // Debounced scroll handlers
+  const debouncedHandleScroll = useCallback(
+    debounce((ref: React.RefObject<HTMLDivElement | null>, setSlide: React.Dispatch<React.SetStateAction<number>>) => {
+      if (ref.current) {
+        const slideWidth = ref.current.offsetWidth
+        const currentIndex = Math.round(ref.current.scrollLeft / slideWidth)
+        setSlide(currentIndex)
+      }
+    }, 50),
+    [debounce]
+  )
 
-  const handleDesktopScroll = () => {
-    if (desktopCarouselRef.current) {
-      const slideWidth = desktopCarouselRef.current.offsetWidth
-      const currentIndex = Math.round(desktopCarouselRef.current.scrollLeft / slideWidth)
-      setDesktopSection(currentIndex)
-    }
-  }
+  const debouncedHandleDesktopScroll = useCallback(
+    debounce(() => {
+      if (desktopCarouselRef.current) {
+        const slideWidth = desktopCarouselRef.current.offsetWidth
+        const currentIndex = Math.round(desktopCarouselRef.current.scrollLeft / slideWidth)
+        setDesktopSection(currentIndex)
+      }
+    }, 50),
+    [debounce]
+  )
 
   useEffect(() => {
     const mainRef = mainCarouselRef.current
@@ -131,22 +148,22 @@ const HowItWorks = () => {
     const standardRef = standardCarouselRef.current
     const desktopRef = desktopCarouselRef.current
 
-    const handleMainScroll = () => handleScroll(mainCarouselRef, setActiveSlide)
-    const handlePreloadedScroll = () => handleScroll(preloadedCarouselRef, setPreloadedSlide)
-    const handleStandardScroll = () => handleScroll(standardCarouselRef, setStandardSlide)
+    const handleMainScroll = () => debouncedHandleScroll(mainCarouselRef, setActiveSlide)
+    const handlePreloadedScroll = () => debouncedHandleScroll(preloadedCarouselRef, setPreloadedSlide)
+    const handleStandardScroll = () => debouncedHandleScroll(standardCarouselRef, setStandardSlide)
 
-    if (mainRef) mainRef.addEventListener('scroll', handleMainScroll)
-    if (preloadedRef) preloadedRef.addEventListener('scroll', handlePreloadedScroll)
-    if (standardRef) standardRef.addEventListener('scroll', handleStandardScroll)
-    if (desktopRef) desktopRef.addEventListener('scroll', handleDesktopScroll)
+    if (mainRef) mainRef.addEventListener('scroll', handleMainScroll, { passive: true })
+    if (preloadedRef) preloadedRef.addEventListener('scroll', handlePreloadedScroll, { passive: true })
+    if (standardRef) standardRef.addEventListener('scroll', handleStandardScroll, { passive: true })
+    if (desktopRef) desktopRef.addEventListener('scroll', debouncedHandleDesktopScroll, { passive: true })
 
     return () => {
       if (mainRef) mainRef.removeEventListener('scroll', handleMainScroll)
       if (preloadedRef) preloadedRef.removeEventListener('scroll', handlePreloadedScroll)
       if (standardRef) standardRef.removeEventListener('scroll', handleStandardScroll)
-      if (desktopRef) desktopRef.removeEventListener('scroll', handleDesktopScroll)
+      if (desktopRef) desktopRef.removeEventListener('scroll', debouncedHandleDesktopScroll)
     }
-  }, [])
+  }, [debouncedHandleScroll, debouncedHandleDesktopScroll])
 
   const GlassChevron: React.FC<GlassChevronProps> = ({ direction, onClick }) => (
     <button
@@ -197,6 +214,8 @@ const HowItWorks = () => {
         width={width}
         height={height}
         className={`transition-all duration-300 transform-gpu md:group-hover:scale-105 ${className}`}
+        priority={false}
+        loading="lazy"
       />
       {title && (
         <p className="text-center text-gray-700 font-medium mt-3 transition-colors duration-300 md:group-hover:text-[#4580A7]">
@@ -207,7 +226,7 @@ const HowItWorks = () => {
   )
 
   const AnimatedBadge: React.FC<AnimatedBadgeProps> = ({ type }) => (
-    <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium transition-all duration-300 transform-gpu md:hover:scale-105 md:hover:shadow-lg md:hover:bg-[#3a6b8a]">
+    <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium transition-all duration-300 transform-gpu md:hover:scale-105 md:hover:shadow-lg md:hover:bg-[#3a6b8a] flex items-center justify-center text-center">
       {type}
     </div>
   )
@@ -262,7 +281,7 @@ const HowItWorks = () => {
         <div 
           ref={mobileCarouselRef}
           data-section="mobile-carousel"
-          className={`md:hidden mb-8 transition-all duration-1000 transform ${
+          className={`md:hidden mb-8 transition-all duration-1000 transform will-change-transform ${
             visibleSections.has('mobile-carousel') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
@@ -270,18 +289,24 @@ const HowItWorks = () => {
             <div 
               ref={mainCarouselRef}
               className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              style={{ 
+                scrollbarWidth: 'none', 
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch'
+              }}
             >
               {mainScreenshots.map((screenshot, index) => (
                 <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                  <AnimatedImage
-                    src={screenshot.src}
-                    alt={screenshot.alt}
-                    width={200}
-                    height={400}
-                    className="drop-shadow-xl"
-                    title={screenshot.title}
-                  />
+                  <div className="will-change-transform">
+                    <AnimatedImage
+                      src={screenshot.src}
+                      alt={screenshot.alt}
+                      width={200}
+                      height={400}
+                      className="drop-shadow-xl"
+                      title={screenshot.title}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -360,7 +385,7 @@ const HowItWorks = () => {
                           alt={screenshot.alt}
                           width={300}
                           height={600}
-                          className="drop-shadow-xl"
+                          className="drop-shadow-xl mx-auto"
                           title={screenshot.title}
                         />
                       </div>
@@ -395,7 +420,7 @@ const HowItWorks = () => {
                           alt={screenshot.alt}
                           width={300}
                           height={600}
-                          className="drop-shadow-xl"
+                          className="drop-shadow-xl mx-auto"
                           title={screenshot.title}
                         />
                       </div>
@@ -432,7 +457,7 @@ const HowItWorks = () => {
           <div 
             ref={mobilePreloadedRef}
             data-section="mobile-preloaded"
-            className={`mb-16 transition-all duration-1000 transform ${
+            className={`mb-16 transition-all duration-1000 transform will-change-transform ${
               visibleSections.has('mobile-preloaded') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
@@ -445,19 +470,25 @@ const HowItWorks = () => {
                 <div 
                   ref={preloadedCarouselRef}
                   className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  style={{ 
+                    scrollbarWidth: 'none', 
+                    msOverflowStyle: 'none',
+                    WebkitOverflowScrolling: 'touch'
+                  }}
                 >
                   {preloadedScreenshots.map((screenshot, index) => (
                     <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                      <AnimatedBadge type={screenshot.type || ''} />
-                      <AnimatedImage
-                        src={screenshot.src}
-                        alt={screenshot.alt}
-                        width={280}
-                        height={560}
-                        className="drop-shadow-xl"
-                        title={screenshot.title}
-                      />
+                      <div className="will-change-transform">
+                        <AnimatedBadge type={screenshot.type || ''} />
+                        <AnimatedImage
+                          src={screenshot.src}
+                          alt={screenshot.alt}
+                          width={280}
+                          height={560}
+                          className="drop-shadow-xl"
+                          title={screenshot.title}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -492,7 +523,7 @@ const HowItWorks = () => {
           <div 
             ref={mobileStandardRef}
             data-section="mobile-standard"
-            className={`transition-all duration-1000 transform ${
+            className={`transition-all duration-1000 transform will-change-transform ${
               visibleSections.has('mobile-standard') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
@@ -505,19 +536,25 @@ const HowItWorks = () => {
                 <div 
                   ref={standardCarouselRef}
                   className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  style={{ 
+                    scrollbarWidth: 'none', 
+                    msOverflowStyle: 'none',
+                    WebkitOverflowScrolling: 'touch'
+                  }}
                 >
                   {standardScreenshots.map((screenshot, index) => (
                     <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                      <AnimatedBadge type={screenshot.type || ''} />
-                      <AnimatedImage
-                        src={screenshot.src}
-                        alt={screenshot.alt}
-                        width={280}
-                        height={560}
-                        className="drop-shadow-xl"
-                        title={screenshot.title}
-                      />
+                      <div className="will-change-transform">
+                        <AnimatedBadge type={screenshot.type || ''} />
+                        <AnimatedImage
+                          src={screenshot.src}
+                          alt={screenshot.alt}
+                          width={280}
+                          height={560}
+                          className="drop-shadow-xl"
+                          title={screenshot.title}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
