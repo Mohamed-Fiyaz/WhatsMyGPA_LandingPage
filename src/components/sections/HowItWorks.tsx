@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Container from '@/components/ui/Container'
-import { ArrowRight, Smartphone, Calculator, FileText, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Smartphone, Calculator, FileText, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 const HowItWorks = () => {
@@ -51,27 +51,6 @@ const HowItWorks = () => {
 
     return () => observer.disconnect()
   }, [])
-
-  const steps = [
-    {
-      id: 1,
-      title: 'Choose Your Calculator',
-      description: 'Select between Preloaded GPA Calculator (for B.Tech and Integrated M.Tech students) or Standard GPA Calculator (for all programs).',
-      icon: <Smartphone className="w-8 h-8" />,
-    },
-    {
-      id: 2,
-      title: 'Enter Your Details',
-      description: 'For preloaded calculator, just select your course and specialization. For standard calculator, manually enter subjects and credits.',
-      icon: <FileText className="w-8 h-8" />,
-    },
-    {
-      id: 3,
-      title: 'Get Your Results',
-      description: 'Enter your grades and instantly calculate your SGPA and CGPA. No manual calculations needed!',
-      icon: <Calculator className="w-8 h-8" />,
-    },
-  ]
 
   const mainScreenshots = [
     { src: "/screenshots/calculator_options_thumb.png", alt: "Home Screen", title: "Choose Calculator" },
@@ -173,50 +152,9 @@ const HowItWorks = () => {
     </div>
   )
 
-  const CarouselDots = ({ total, active, onDotClick }) => (
-    <div className="flex justify-center space-x-2 mt-4 md:hidden">
-      {Array.from({ length: total }).map((_, index) => (
-        <button
-          key={index}
-          onClick={() => onDotClick(index)}
-          className={`w-2 h-2 rounded-full transition-all duration-300 transform-gpu touch-manipulation ${
-            index === active ? 'bg-[#4580A7] scale-110' : 'bg-gray-300'
-          }`}
-        />
-      ))}
-    </div>
-  )
-
   const SectionDivider = () => (
     <div className="flex justify-center my-16">
       <div className="w-32 h-0.5 bg-[#4580A7] animate-pulse"></div>
-    </div>
-  )
-
-  const DesktopNavigationButtons = () => (
-    <div className="hidden md:flex justify-center items-center gap-4 mb-8">
-      <button
-        onClick={() => scrollToSlide(desktopCarouselRef, 0)}
-        className={`px-6 py-3 rounded-full font-medium transition-all duration-300 transform-gpu 
-        md:hover:scale-105 active:scale-95 touch-manipulation ${
-          desktopSection === 0 
-            ? 'bg-[#4580A7] text-white shadow-lg md:hover:shadow-xl' 
-            : 'bg-white text-[#4580A7] border-2 border-[#4580A7] md:hover:bg-[#4580A7] md:hover:text-white md:hover:shadow-lg'
-        }`}
-      >
-        Preloaded GPA Calculator
-      </button>
-      <button
-        onClick={() => scrollToSlide(desktopCarouselRef, 1)}
-        className={`px-6 py-3 rounded-full font-medium transition-all duration-300 transform-gpu 
-        md:hover:scale-105 active:scale-95 touch-manipulation ${
-          desktopSection === 1 
-            ? 'bg-[#4580A7] text-white shadow-lg md:hover:shadow-xl' 
-            : 'bg-white text-[#4580A7] border-2 border-[#4580A7] md:hover:bg-[#4580A7] md:hover:text-white md:hover:shadow-lg'
-        }`}
-      >
-        Standard GPA Calculator
-      </button>
     </div>
   )
 

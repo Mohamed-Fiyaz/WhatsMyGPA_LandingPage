@@ -129,7 +129,7 @@ const Header = () => {
               >
                 <Image
                   src="/images/mascot/pencil_mascot.png"
-                  alt="What's My GPA Mascot"
+alt="What&#39;s My GPA Mascot"
                   width={60}
                   height={60}
                   className="w-[52px] h-[52px] md:w-[60px] md:h-[60px] transition-transform duration-200 group-hover:scale-105"

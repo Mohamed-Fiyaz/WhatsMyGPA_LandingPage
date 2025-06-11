@@ -97,7 +97,6 @@ const Testimonials = () => {
     cards.forEach((card, index) => {
       const cardRect = card.getBoundingClientRect()
       const cardCenter = cardRect.left + cardRect.width / 2
-      const containerCenter = containerRect.left + containerRect.width / 2
       
       // Card is considered visible if its center is within the container bounds
       if (cardCenter >= containerRect.left && cardCenter <= containerRect.right) {
@@ -109,24 +108,26 @@ const Testimonials = () => {
   }
 
   // Intersection Observer for section visibility
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting)
-      },
-      { threshold: 0.1 }
-    )
+useEffect(() => {
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      setIsVisible(entry.isIntersecting)
+    },
+    { threshold: 0.1 }
+  )
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
-    }
+  const currentRef = sectionRef.current
+  if (currentRef) {
+    observer.observe(currentRef)
+  }
 
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current)
-      }
+  return () => {
+    if (currentRef) {
+      observer.unobserve(currentRef)
     }
-  }, [])
+  }
+}, [])
+
 
   useEffect(() => {
     const container = scrollContainerRef.current
@@ -278,9 +279,10 @@ const Testimonials = () => {
                           />
                         ))}
                       </div>
-                      <p className="text-gray-700 leading-relaxed text-base font-medium transition-all duration-300 group-hover:text-gray-800">
-                        "{t.content}"
-                      </p>
+<p className="text-gray-700 leading-relaxed text-base font-medium transition-all duration-300 group-hover:text-gray-800">
+  {`"${t.content}"`}
+</p>
+
                     </div>
                   </div>
 

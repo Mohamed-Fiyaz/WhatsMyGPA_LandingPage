@@ -39,7 +39,7 @@ const Footer = () => {
                 Ready to Calculate Your GPA?
               </h2>
               <p className="text-lg sm:text-xl text-white mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
-                Download What's My GPA today and calculate your results in a snap.
+Download What&#39;s My GPA today and calculate your results in a snap.
               </p>
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-500">
 <Button 
@@ -67,14 +67,14 @@ const Footer = () => {
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center">
                     <Image
                       src="/images/mascot/pencil_mascot.png"
-                      alt="What's My GPA Mascot"
+alt="What&#39;s My GPA Mascot"
                       width={64}
                       height={64}
                       quality={100}
                       className="w-10 h-10 sm:w-12 sm:h-12"
                     />
                   </div>
-                  <span className="ml-2 text-lg sm:text-xl font-nunito-black">What's My GPA?</span>
+<span className="ml-2 text-lg sm:text-xl font-nunito-black">What&#39;s My GPA?</span>
                 </div>
 
                 <p className="text-gray-400 mb-4 max-w-md mx-auto sm:mx-0 text-sm sm:text-base leading-relaxed">
@@ -150,9 +150,8 @@ const Footer = () => {
         <div className="py-4 sm:py-6 border-t border-gray-800">
           <Container>
             <div className="flex flex-col items-center space-y-3 sm:space-y-0 sm:flex-row sm:justify-between px-4">
-              <p className="text-gray-400 text-xs sm:text-sm text-center sm:text-left">
-                © {new Date().getFullYear()} What's My GPA. All rights reserved.
-              </p>
+<p className="text-gray-400 text-xs sm:text-sm text-center sm:text-left">© {new Date().getFullYear()} What&#39;s My GPA. All rights reserved.</p>
+
               <div className="flex items-center gap-4 sm:gap-6">
                 <a 
                   href="#" 

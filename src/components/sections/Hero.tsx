@@ -3,29 +3,16 @@
 import Image from 'next/image'
 import Button from '@/components/ui/Button'
 import Container from '@/components/ui/Container'
-import { Download, Star } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 const Hero = () => {
   const [showPopup, setShowPopup] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
-  const [showScrollIndicator, setShowScrollIndicator] = useState(true)
 
   useEffect(() => {
     // Trigger animations after component mounts
     setIsVisible(true)
-
-    // Hide scroll indicator when user scrolls
-    const handleScroll = () => {
-      if (window.scrollY > 100) {
-        setShowScrollIndicator(false)
-      } else {
-        setShowScrollIndicator(true)
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   const handleDownloadClick = () => {

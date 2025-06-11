@@ -78,7 +78,7 @@ const FAQ = () => {
             Frequently Asked Questions
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Got questions? We've got answers. Find everything you need to know about What's My GPA.
+  Got questions? We&#39;ve got answers. Find everything you need to know about What&#39;s My GPA.
           </p>
         </div>
 
