@@ -9,10 +9,12 @@ const HowItWorks = () => {
   const [activeSlide, setActiveSlide] = useState(0)
   const [preloadedSlide, setPreloadedSlide] = useState(0)
   const [standardSlide, setStandardSlide] = useState(0)
+  const [desktopSection, setDesktopSection] = useState(0) // 0 = preloaded, 1 = standard
   
   const mainCarouselRef = useRef<HTMLDivElement>(null)
   const preloadedCarouselRef = useRef<HTMLDivElement>(null)
   const standardCarouselRef = useRef<HTMLDivElement>(null)
+  const desktopCarouselRef = useRef<HTMLDivElement>(null)
 
   const steps = [
     {
@@ -69,10 +71,19 @@ const HowItWorks = () => {
     }
   }
 
+  const handleDesktopScroll = () => {
+    if (desktopCarouselRef.current) {
+      const slideWidth = desktopCarouselRef.current.offsetWidth
+      const currentIndex = Math.round(desktopCarouselRef.current.scrollLeft / slideWidth)
+      setDesktopSection(currentIndex)
+    }
+  }
+
   useEffect(() => {
     const mainRef = mainCarouselRef.current
     const preloadedRef = preloadedCarouselRef.current
     const standardRef = standardCarouselRef.current
+    const desktopRef = desktopCarouselRef.current
 
     const handleMainScroll = () => handleScroll(mainCarouselRef, setActiveSlide)
     const handlePreloadedScroll = () => handleScroll(preloadedCarouselRef, setPreloadedSlide)
@@ -81,13 +92,48 @@ const HowItWorks = () => {
     if (mainRef) mainRef.addEventListener('scroll', handleMainScroll)
     if (preloadedRef) preloadedRef.addEventListener('scroll', handlePreloadedScroll)
     if (standardRef) standardRef.addEventListener('scroll', handleStandardScroll)
+    if (desktopRef) desktopRef.addEventListener('scroll', handleDesktopScroll)
 
     return () => {
       if (mainRef) mainRef.removeEventListener('scroll', handleMainScroll)
       if (preloadedRef) preloadedRef.removeEventListener('scroll', handlePreloadedScroll)
       if (standardRef) standardRef.removeEventListener('scroll', handleStandardScroll)
+      if (desktopRef) desktopRef.removeEventListener('scroll', handleDesktopScroll)
     }
   }, [])
+
+  const GlassChevron = ({ direction, onClick }: { direction: 'left' | 'right', onClick: () => void }) => (
+    <button
+      onClick={onClick}
+      className={`absolute top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full 
+        backdrop-blur-md bg-white/30 border border-white/50 shadow-lg
+        flex items-center justify-center transition-all duration-300
+        hover:bg-white/40 hover:shadow-xl hover:scale-105 opacity-90 hover:opacity-100
+        ${direction === 'left' ? 'left-4' : 'right-4'}
+      `}
+    >
+      {direction === 'left' ? (
+        <ChevronLeft className="w-6 h-6 text-gray-700 hover:text-[#4580A7] transition-colors duration-300" />
+      ) : (
+        <ChevronRight className="w-6 h-6 text-gray-700 hover:text-[#4580A7] transition-colors duration-300" />
+      )}
+    </button>
+  )
+
+  const ScrollIndicators = ({ total, active, className = "" }: { total: number, active: number, className?: string }) => (
+    <div className={`flex justify-center space-x-2 ${className}`}>
+      {Array.from({ length: total }).map((_, index) => (
+        <div
+          key={index}
+          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            index === active 
+              ? 'bg-[#4580A7] scale-125' 
+              : 'bg-gray-300 hover:bg-gray-400'
+          }`}
+        />
+      ))}
+    </div>
+  )
 
   const CarouselDots = ({ total, active, onDotClick }: { total: number, active: number, onDotClick: (index: number) => void }) => (
     <div className="flex justify-center space-x-2 mt-4 md:hidden">
@@ -104,8 +150,33 @@ const HowItWorks = () => {
   )
 
   const SectionDivider = () => (
-    <div className="flex justify-center my-8">
+    <div className="flex justify-center my-16">
       <div className="w-32 h-0.5 bg-[#4580A7]"></div>
+    </div>
+  )
+
+  const DesktopNavigationButtons = () => (
+    <div className="hidden md:flex justify-center items-center gap-4 mb-8">
+      <button
+        onClick={() => scrollToSlide(desktopCarouselRef, 0)}
+        className={`px-6 py-3 rounded-full font-medium transition-all ${
+          desktopSection === 0 
+            ? 'bg-[#4580A7] text-white shadow-lg' 
+            : 'bg-white text-[#4580A7] border-2 border-[#4580A7] hover:bg-[#4580A7] hover:text-white'
+        }`}
+      >
+        Preloaded GPA Calculator
+      </button>
+      <button
+        onClick={() => scrollToSlide(desktopCarouselRef, 1)}
+        className={`px-6 py-3 rounded-full font-medium transition-all ${
+          desktopSection === 1 
+            ? 'bg-[#4580A7] text-white shadow-lg' 
+            : 'bg-white text-[#4580A7] border-2 border-[#4580A7] hover:bg-[#4580A7] hover:text-white'
+        }`}
+      >
+        Standard GPA Calculator
+      </button>
     </div>
   )
 
@@ -136,32 +207,44 @@ const HowItWorks = () => {
           ))}
         </div>
 
-        {/* Mobile: Swipeable Carousel */}
+        {/* Mobile: Swipeable Carousel with Chevrons */}
         <div className="md:hidden mb-8">
-          <div 
-            ref={mainCarouselRef}
-            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {mainScreenshots.map((screenshot, index) => (
-              <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                <Image
-                  src={screenshot.src}
-                  alt={screenshot.alt}
-                  width={200}
-                  height={400}
-                  className="drop-shadow-xl"
-                />
-                <p className="text-center text-gray-700 font-medium mt-3">
-                  {screenshot.title}
-                </p>
-              </div>
-            ))}
+          <div className="relative">
+            <div 
+              ref={mainCarouselRef}
+              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {mainScreenshots.map((screenshot, index) => (
+                <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
+                  <Image
+                    src={screenshot.src}
+                    alt={screenshot.alt}
+                    width={200}
+                    height={400}
+                    className="drop-shadow-xl"
+                  />
+                  <p className="text-center text-gray-700 font-medium mt-3">
+                    {screenshot.title}
+                  </p>
+                </div>
+              ))}
+            </div>
+            
+            <GlassChevron 
+              direction="left" 
+              onClick={() => scrollToSlide(mainCarouselRef, Math.max(0, activeSlide - 1))}
+            />
+            <GlassChevron 
+              direction="right" 
+              onClick={() => scrollToSlide(mainCarouselRef, Math.min(mainScreenshots.length - 1, activeSlide + 1))}
+            />
           </div>
-          <CarouselDots 
+          
+          <ScrollIndicators 
             total={mainScreenshots.length} 
             active={activeSlide} 
-            onDotClick={(index) => scrollToSlide(mainCarouselRef, index)}
+            className="mt-4"
           />
         </div>
 
@@ -181,125 +264,195 @@ const HowItWorks = () => {
 
         <SectionDivider />
 
-        {/* Preloaded GPA Calculator Section */}
-        <div className="mb-16">
-          <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
-            Preloaded GPA Calculator
-          </h3>
-
-          {/* Desktop Layout */}
-          <div className="hidden md:grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-            {preloadedScreenshots.map((screenshot, index) => (
-              <div key={index} className="text-center">
-                <h4 className="text-xl font-semibold text-gray-900 mb-4">{screenshot.type}</h4>
-                <div className="flex justify-center">
-                  <Image
-                    src={screenshot.src}
-                    alt={screenshot.alt}
-                    width={300}
-                    height={600}
-                    className="drop-shadow-xl"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Mobile Layout */}
-          <div className="md:hidden mb-8">
+        {/* Desktop: Horizontal Scrollable Sections with Chevrons */}
+        <div className="hidden md:block mb-2">
+          <div className="relative">
             <div 
-              ref={preloadedCarouselRef}
+              ref={desktopCarouselRef}
               className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              {preloadedScreenshots.map((screenshot, index) => (
-                <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                  <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium">
-                    {screenshot.type}
-                  </div>
-                  <Image
-                    src={screenshot.src}
-                    alt={screenshot.alt}
-                    width={280}
-                    height={560}
-                    className="drop-shadow-xl"
-                  />
+              {/* Preloaded GPA Calculator Section */}
+              <div className="flex-shrink-0 w-full snap-center">
+                <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+                  Preloaded GPA Calculator
+                </h3>
+                <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto mb-8">
+                  {preloadedScreenshots.map((screenshot, index) => (
+                    <div key={index} className="text-center">
+                      <h4 className="text-xl font-semibold text-gray-900 mb-4">{screenshot.type}</h4>
+                      <div className="flex justify-center">
+                        <Image
+                          src={screenshot.src}
+                          alt={screenshot.alt}
+                          width={300}
+                          height={600}
+                          className="drop-shadow-xl"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+                <p className="text-center text-gray-600 max-w-3xl mx-auto">
+                  The list of subjects along with their credits and total number of semesters
+                  along with their total credits is preloaded according to the course and
+                  specialization selected by the user.
+                </p>
+              </div>
+
+              {/* Standard GPA Calculator Section */}
+              <div className="flex-shrink-0 w-full snap-center">
+                <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+                  Standard GPA Calculator
+                </h3>
+                <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto mb-8">
+                  {standardScreenshots.map((screenshot, index) => (
+                    <div key={index} className="text-center">
+                      <h4 className="text-xl font-semibold text-gray-900 mb-4">{screenshot.type}</h4>
+                      <div className="flex justify-center">
+                        <Image
+                          src={screenshot.src}
+                          alt={screenshot.alt}
+                          width={300}
+                          height={600}
+                          className="drop-shadow-xl"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-center text-gray-600 max-w-3xl mx-auto">
+                  The user has to manually enter the number of credits per subject, the overall
+                  total credits, the total number of subjects, and the total number of semesters.
+                </p>
+              </div>
             </div>
-            <CarouselDots 
-              total={preloadedScreenshots.length} 
-              active={preloadedSlide} 
-              onDotClick={(index) => scrollToSlide(preloadedCarouselRef, index)}
+
+            <GlassChevron 
+              direction="left" 
+              onClick={() => scrollToSlide(desktopCarouselRef, 0)}
+            />
+            <GlassChevron 
+              direction="right" 
+              onClick={() => scrollToSlide(desktopCarouselRef, 1)}
             />
           </div>
-
-          <p className="text-center text-gray-600 mt-6 max-w-3xl mx-auto">
-            The list of subjects along with their credits and total number of semesters
-            along with their total credits is preloaded according to the course and
-            specialization selected by the user.
-          </p>
+          
+          <ScrollIndicators 
+            total={2} 
+            active={desktopSection} 
+            className="mt-8"
+          />
         </div>
 
-        <SectionDivider />
+        {/* Mobile: Original Vertical Layout with Enhanced Carousels */}
+        <div className="md:hidden">
+          {/* Preloaded GPA Calculator Section */}
+          <div className="mb-16">
+            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+              Preloaded GPA Calculator
+            </h3>
 
-        {/* Standard GPA Calculator Section */}
-        <div>
-          <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
-            Standard GPA Calculator
-          </h3>
-
-          {/* Desktop Layout */}
-          <div className="hidden md:grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-            {standardScreenshots.map((screenshot, index) => (
-              <div key={index} className="text-center">
-                <h4 className="text-xl font-semibold text-gray-900 mb-4">{screenshot.type}</h4>
-                <div className="flex justify-center">
-                  <Image
-                    src={screenshot.src}
-                    alt={screenshot.alt}
-                    width={300}
-                    height={600}
-                    className="drop-shadow-xl"
-                  />
+            <div className="mb-8">
+              <div className="relative">
+                <div 
+                  ref={preloadedCarouselRef}
+                  className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {preloadedScreenshots.map((screenshot, index) => (
+                    <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
+                      <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium">
+                        {screenshot.type}
+                      </div>
+                      <Image
+                        src={screenshot.src}
+                        alt={screenshot.alt}
+                        width={280}
+                        height={560}
+                        className="drop-shadow-xl"
+                      />
+                    </div>
+                  ))}
                 </div>
+                
+                <GlassChevron 
+                  direction="left" 
+                  onClick={() => scrollToSlide(preloadedCarouselRef, Math.max(0, preloadedSlide - 1))}
+                />
+                <GlassChevron 
+                  direction="right" 
+                  onClick={() => scrollToSlide(preloadedCarouselRef, Math.min(preloadedScreenshots.length - 1, preloadedSlide + 1))}
+                />
               </div>
-            ))}
-          </div>
-
-          {/* Mobile Layout */}
-          <div className="md:hidden mb-8">
-            <div 
-              ref={standardCarouselRef}
-              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {standardScreenshots.map((screenshot, index) => (
-                <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                  <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium">
-                    {screenshot.type}
-                  </div>
-                  <Image
-                    src={screenshot.src}
-                    alt={screenshot.alt}
-                    width={280}
-                    height={560}
-                    className="drop-shadow-xl"
-                  />
-                </div>
-              ))}
+              
+              <ScrollIndicators 
+                total={preloadedScreenshots.length} 
+                active={preloadedSlide} 
+                className="mt-4"
+              />
             </div>
-            <CarouselDots 
-              total={standardScreenshots.length} 
-              active={standardSlide} 
-              onDotClick={(index) => scrollToSlide(standardCarouselRef, index)}
-            />
+
+            <p className="text-center text-gray-600 mt-6 max-w-3xl mx-auto">
+              The list of subjects along with their credits and total number of semesters
+              along with their total credits is preloaded according to the course and
+              specialization selected by the user.
+            </p>
           </div>
 
-          <p className="text-center text-gray-600 mt-6 max-w-3xl mx-auto">
-            The user has to manually enter the number of credits per subject, the overall
-            total credits, the total number of subjects, and the total number of semesters.
-          </p>
+          <SectionDivider />
+
+          {/* Standard GPA Calculator Section */}
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+              Standard GPA Calculator
+            </h3>
+
+            <div className="mb-8">
+              <div className="relative">
+                <div 
+                  ref={standardCarouselRef}
+                  className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {standardScreenshots.map((screenshot, index) => (
+                    <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
+                      <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium">
+                        {screenshot.type}
+                      </div>
+                      <Image
+                        src={screenshot.src}
+                        alt={screenshot.alt}
+                        width={280}
+                        height={560}
+                        className="drop-shadow-xl"
+                      />
+                    </div>
+                  ))}
+                </div>
+                
+                <GlassChevron 
+                  direction="left" 
+                  onClick={() => scrollToSlide(standardCarouselRef, Math.max(0, standardSlide - 1))}
+                />
+                <GlassChevron 
+                  direction="right" 
+                  onClick={() => scrollToSlide(standardCarouselRef, Math.min(standardScreenshots.length - 1, standardSlide + 1))}
+                />
+              </div>
+              
+              <ScrollIndicators 
+                total={standardScreenshots.length} 
+                active={standardSlide} 
+                className="mt-4"
+              />
+            </div>
+
+            <p className="text-center text-gray-600 mt-6 max-w-3xl mx-auto">
+              The user has to manually enter the number of credits per subject, the overall
+              total credits, the total number of subjects, and the total number of semesters.
+            </p>
+          </div>
         </div>
       </Container>
 

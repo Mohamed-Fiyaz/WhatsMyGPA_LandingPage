@@ -5,6 +5,7 @@ import Features from '@/components/sections/Features'
 import Testimonials from '@/components/sections/Testimonials'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
+import ScrollToTop from '@/components/ui/ScrollToTop'
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
       <Testimonials />
       <FAQ />
       <Footer />
+      <ScrollToTop />
     </main>
   )
 }

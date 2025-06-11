@@ -11,7 +11,7 @@ const FAQ = () => {
     {
       id: 1,
       question: 'Is this app only for SRM IST students?',
-      answer: 'While the app is specifically designed for SRM IST students with preloaded subjects and credits, anyone can use the Standard GPA Calculator feature which supports all degree programs.'
+      answer: 'Yes, the app is specifically designed for SRM IST students.'
     },
     {
       id: 2,
@@ -30,8 +30,8 @@ const FAQ = () => {
     },
     {
       id: 5,
-      question: 'Is the app free to use?',
-      answer: 'Yes, What\'s My GPA is completely free to download and use. No hidden charges or premium features - everything is available at no cost.'
+      question: 'Why are subjects like UHV II not included?',
+      answer: 'As per the curriculum and syllabus provided by SRM IST, the grade points earned in that course are not considered for SGPA/CGPA calculation.'
     },
     {
       id: 6,
@@ -71,7 +71,7 @@ const FAQ = () => {
                   {faq.question}
                 </h3>
                 {openItems.includes(faq.id) ? (
-                  <ChevronUp size={24} className="text-blue-600 flex-shrink-0" />
+                  <ChevronUp size={24} className="text-[#4580A7] flex-shrink-0" />
                 ) : (
                   <ChevronDown size={24} className="text-gray-400 flex-shrink-0" />
                 )}
@@ -86,19 +86,6 @@ const FAQ = () => {
               )}
             </div>
           ))}
-        </div>
-
-        {/* Still have questions section */}
-        <div className="text-center mt-12 p-8 bg-blue-50 rounded-2xl">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Still have questions?
-          </h3>
-          <p className="text-gray-600 mb-4">
-            Can't find the answer you're looking for? Feel free to reach out to us.
-          </p>
-          <button className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            Contact Support
-          </button>
         </div>
       </Container>
     </section>

@@ -43,14 +43,14 @@ const Features = () => {
   ]
 
   return (
-    <section id="features" className="py-20 bg-white">
+    <section id="features" className="py-20 bg-[#E4F0F8]">
       <Container>
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
             Why Choose What's My GPA?
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Built by students, for students. Experience the easiest way to calculate your GPA.
+            Built by a student, for students. Experience the easiest way to calculate your GPA.
           </p>
         </div>
 
@@ -60,7 +60,7 @@ const Features = () => {
               key={index}
               className="text-center p-6 rounded-xl hover:shadow-lg transition-shadow duration-300 hover-lift"
             >
-              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-[#4580A7] text-white rounded-full flex items-center justify-center mx-auto mb-4">
                 {feature.icon}
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
