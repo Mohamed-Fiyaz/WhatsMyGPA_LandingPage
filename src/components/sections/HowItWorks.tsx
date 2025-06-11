@@ -32,6 +32,15 @@ interface AnimatedImageProps {
   title?: string
 }
 
+interface StaticImageProps {
+  src: string
+  alt: string
+  width: number
+  height: number
+  className?: string
+  title?: string
+}
+
 interface AnimatedBadgeProps {
   type: string
 }
@@ -288,6 +297,32 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
     </div>
   )
 
+  const StaticImage: React.FC<StaticImageProps> = ({ 
+    src, 
+    alt, 
+    width, 
+    height, 
+    className = "", 
+    title 
+  }) => (
+    <div>
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        className={className}
+        priority={false}
+        loading="lazy"
+      />
+      {title && (
+        <p className="text-center text-gray-700 font-medium mt-3">
+          {title}
+        </p>
+      )}
+    </div>
+  )
+
   const AnimatedBadge: React.FC<AnimatedBadgeProps> = ({ type }) => (
     <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-[#3a6b8a] flex items-center justify-center text-center">
       {type}
@@ -362,7 +397,7 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
             >
               {mainScreenshots.map((screenshot, index) => (
                 <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                  <AnimatedImage
+                  <StaticImage
                     src={screenshot.src}
                     alt={screenshot.alt}
                     width={200}
@@ -546,7 +581,7 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
                   {preloadedScreenshots.map((screenshot, index) => (
                     <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
                       <AnimatedBadge type={screenshot.type || ''} />
-                      <AnimatedImage
+                      <StaticImage
                         src={screenshot.src}
                         alt={screenshot.alt}
                         width={280}
@@ -610,7 +645,7 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
                   {standardScreenshots.map((screenshot, index) => (
                     <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
                       <AnimatedBadge type={screenshot.type || ''} />
-                      <AnimatedImage
+                      <StaticImage
                         src={screenshot.src}
                         alt={screenshot.alt}
                         width={280}
