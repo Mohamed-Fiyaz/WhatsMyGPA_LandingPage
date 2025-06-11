@@ -5,26 +5,57 @@ import Container from '@/components/ui/Container'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
+interface Screenshot {
+  src: string
+  alt: string
+  title: string
+  type?: string
+}
+
+interface GlassChevronProps {
+  direction: 'left' | 'right'
+  onClick: () => void
+}
+
+interface ScrollIndicatorsProps {
+  total: number
+  active: number
+  className?: string
+}
+
+interface AnimatedImageProps {
+  src: string
+  alt: string
+  width: number
+  height: number
+  className?: string
+  title?: string
+}
+
+interface AnimatedBadgeProps {
+  type: string
+}
+
 const HowItWorks = () => {
   const [activeSlide, setActiveSlide] = useState(0)
   const [preloadedSlide, setPreloadedSlide] = useState(0)
   const [standardSlide, setStandardSlide] = useState(0)
   const [desktopSection, setDesktopSection] = useState(0) // 0 = preloaded, 1 = standard
-  const [visibleSections, setVisibleSections] = useState(new Set())
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
   
-  const mainCarouselRef = useRef(null)
-  const preloadedCarouselRef = useRef(null)
-  const standardCarouselRef = useRef(null)
-  const desktopCarouselRef = useRef(null)
+  const mainCarouselRef = useRef<HTMLDivElement>(null)
+  const preloadedCarouselRef = useRef<HTMLDivElement>(null)
+  const standardCarouselRef = useRef<HTMLDivElement>(null)
+  const desktopCarouselRef = useRef<HTMLDivElement>(null)
   
   // Refs for scroll animation triggers
-  const headerRef = useRef(null)
-  const desktopScreenshotsRef = useRef(null)
-  const mobileCarouselRef = useRef(null)
-  const descriptionRef = useRef(null)
-  const calculatorSectionsRef = useRef(null)
-  const mobilePreloadedRef = useRef(null)
-  const mobileStandardRef = useRef(null)
+  const headerRef = useRef<HTMLDivElement>(null)
+  const desktopScreenshotsRef = useRef<HTMLDivElement>(null)
+  const mobileCarouselRef = useRef<HTMLDivElement>(null)
+  const descriptionRef = useRef<HTMLDivElement>(null)
+  const calculatorSectionsRef = useRef<HTMLDivElement>(null)
+  const mobilePreloadedRef = useRef<HTMLDivElement>(null)
+  const mobileStandardRef = useRef<HTMLDivElement>(null)
 
   // Intersection Observer for scroll animations
   useEffect(() => {
@@ -38,7 +69,7 @@ const HowItWorks = () => {
         if (entry.isIntersecting) {
           const sectionId = entry.target.getAttribute('data-section')
           if (sectionId) {
-            setVisibleSections(prev => new Set([...prev, sectionId]))
+            setVisibleSections(prev => new Set([...Array.from(prev), sectionId]))
           }
         }
       })
@@ -52,23 +83,23 @@ const HowItWorks = () => {
     return () => observer.disconnect()
   }, [])
 
-  const mainScreenshots = [
+  const mainScreenshots: Screenshot[] = [
     { src: "/screenshots/calculator_options_thumb.png", alt: "Home Screen", title: "Choose Calculator" },
     { src: "/screenshots/preloaded_thumb.png", alt: "Preloaded Calculator", title: "Preloaded Option" },
     { src: "/screenshots/standard_thumb.png", alt: "Standard Calculator", title: "Standard Option" }
   ]
 
-  const preloadedScreenshots = [
+  const preloadedScreenshots: Screenshot[] = [
     { src: "/screenshots/preloaded_sgpa_thumb.png", alt: "SGPA Calculator", title: "SGPA", type: "SGPA" },
     { src: "/screenshots/preloaded_cgpa_thumb.png", alt: "CGPA Calculator", title: "CGPA", type: "CGPA" }
   ]
 
-  const standardScreenshots = [
+  const standardScreenshots: Screenshot[] = [
     { src: "/screenshots/standard_sgpa_thumb.png", alt: "Standard SGPA Calculator", title: "SGPA", type: "SGPA" },
     { src: "/screenshots/standard_cgpa_thumb.png", alt: "Standard CGPA Calculator", title: "CGPA", type: "CGPA" }
   ]
 
-  const scrollToSlide = (ref, index) => {
+  const scrollToSlide = (ref: React.RefObject<HTMLDivElement>, index: number) => {
     if (ref.current) {
       const slideWidth = ref.current.offsetWidth
       ref.current.scrollTo({
@@ -78,7 +109,7 @@ const HowItWorks = () => {
     }
   }
 
-  const handleScroll = (ref, setSlide) => {
+  const handleScroll = (ref: React.RefObject<HTMLDivElement>, setSlide: React.Dispatch<React.SetStateAction<number>>) => {
     if (ref.current) {
       const slideWidth = ref.current.offsetWidth
       const currentIndex = Math.round(ref.current.scrollLeft / slideWidth)
@@ -117,7 +148,7 @@ const HowItWorks = () => {
     }
   }, [])
 
-  const GlassChevron = ({ direction, onClick }) => (
+  const GlassChevron: React.FC<GlassChevronProps> = ({ direction, onClick }) => (
     <button
       onClick={onClick}
       className={`absolute top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full 
@@ -137,7 +168,7 @@ const HowItWorks = () => {
     </button>
   )
 
-  const ScrollIndicators = ({ total, active, className = "" }) => (
+  const ScrollIndicators: React.FC<ScrollIndicatorsProps> = ({ total, active, className = "" }) => (
     <div className={`flex justify-center space-x-2 ${className}`}>
       {Array.from({ length: total }).map((_, index) => (
         <div
@@ -158,7 +189,7 @@ const HowItWorks = () => {
     </div>
   )
 
-  const AnimatedImage = ({ src, alt, width, height, className = "", title }) => (
+  const AnimatedImage: React.FC<AnimatedImageProps> = ({ src, alt, width, height, className = "", title }) => (
     <div className="group">
       <Image
         src={src}
@@ -175,7 +206,7 @@ const HowItWorks = () => {
     </div>
   )
 
-  const AnimatedBadge = ({ type }) => (
+  const AnimatedBadge: React.FC<AnimatedBadgeProps> = ({ type }) => (
     <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium transition-all duration-300 transform-gpu md:hover:scale-105 md:hover:shadow-lg md:hover:bg-[#3a6b8a]">
       {type}
     </div>
@@ -221,6 +252,7 @@ const HowItWorks = () => {
                 width={250}
                 height={500}
                 className="drop-shadow-xl"
+                title={screenshot.title}
               />
             </div>
           ))}
@@ -329,6 +361,7 @@ const HowItWorks = () => {
                           width={300}
                           height={600}
                           className="drop-shadow-xl"
+                          title={screenshot.title}
                         />
                       </div>
                     </div>
@@ -363,6 +396,7 @@ const HowItWorks = () => {
                           width={300}
                           height={600}
                           className="drop-shadow-xl"
+                          title={screenshot.title}
                         />
                       </div>
                     </div>
@@ -415,13 +449,14 @@ const HowItWorks = () => {
                 >
                   {preloadedScreenshots.map((screenshot, index) => (
                     <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                      <AnimatedBadge type={screenshot.type} />
+                      <AnimatedBadge type={screenshot.type || ''} />
                       <AnimatedImage
                         src={screenshot.src}
                         alt={screenshot.alt}
                         width={280}
                         height={560}
                         className="drop-shadow-xl"
+                        title={screenshot.title}
                       />
                     </div>
                   ))}
@@ -474,13 +509,14 @@ const HowItWorks = () => {
                 >
                   {standardScreenshots.map((screenshot, index) => (
                     <div key={index} className="flex-shrink-0 w-full flex flex-col items-center snap-center px-4">
-                      <AnimatedBadge type={screenshot.type} />
+                      <AnimatedBadge type={screenshot.type || ''} />
                       <AnimatedImage
                         src={screenshot.src}
                         alt={screenshot.alt}
                         width={280}
                         height={560}
                         className="drop-shadow-xl"
+                        title={screenshot.title}
                       />
                     </div>
                   ))}
