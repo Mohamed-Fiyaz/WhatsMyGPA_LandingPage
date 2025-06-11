@@ -324,7 +324,7 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
   )
 
   const AnimatedBadge: React.FC<AnimatedBadgeProps> = ({ type }) => (
-    <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-[#3a6b8a] flex items-center justify-center text-center">
+    <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium flex items-center justify-center text-center md:transition-all md:duration-300 md:hover:scale-105 md:hover:shadow-lg md:hover:bg-[#3a6b8a]">
       {type}
     </div>
   )
@@ -381,9 +381,7 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
         <div 
           ref={mobileCarouselRef}
           data-section="mobile-carousel"
-          className={`md:hidden mb-8 transition-all duration-1000 ${
-            visibleSections.has('mobile-carousel') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
+          className="md:hidden mb-8"
         >
           <div className="relative">
             <div 
@@ -559,9 +557,7 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
           <div 
             ref={mobilePreloadedRef}
             data-section="mobile-preloaded"
-            className={`mb-16 transition-all duration-1000 ${
-              visibleSections.has('mobile-preloaded') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
+            className="mb-16"
           >
             <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
               Preloaded GPA Calculator
@@ -623,9 +619,7 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
           <div 
             ref={mobileStandardRef}
             data-section="mobile-standard"
-            className={`transition-all duration-1000 ${
-              visibleSections.has('mobile-standard') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
+            className="mb-16"
           >
             <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
               Standard GPA Calculator
