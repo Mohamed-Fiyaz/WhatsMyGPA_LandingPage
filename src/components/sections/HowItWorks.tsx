@@ -32,10 +32,6 @@ interface AnimatedImageProps {
   title?: string
 }
 
-interface AnimatedBadgeProps {
-  type: string
-}
-
 interface PopupCarouselProps {
   screenshots: Screenshot[]
   title: string
@@ -44,11 +40,7 @@ interface PopupCarouselProps {
 }
 
 const HowItWorks = () => {
-  const [activeSlide, setActiveSlide] = useState(0)
-  const [preloadedSlide, setPreloadedSlide] = useState(0)
-  const [standardSlide, setStandardSlide] = useState(0)
   const [desktopSection, setDesktopSection] = useState(0)
-  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
   // Track sections that have been animated (one-time animation)
   const [animatedSections, setAnimatedSections] = useState<Set<string>>(new Set())
   
@@ -56,23 +48,13 @@ const HowItWorks = () => {
   const [popupOpen, setPopupOpen] = useState<string | null>(null)
   
   // Fixed ref types - using proper HTMLDivElement type
-  const mainCarouselRef = useRef<HTMLDivElement>(null)
-  const preloadedCarouselRef = useRef<HTMLDivElement>(null)
-  const standardCarouselRef = useRef<HTMLDivElement>(null)
   const desktopCarouselRef = useRef<HTMLDivElement>(null)
-  const popupCarouselRef = useRef<HTMLDivElement>(null)
   
   // Refs for scroll animation triggers
   const headerRef = useRef<HTMLDivElement>(null)
   const desktopScreenshotsRef = useRef<HTMLDivElement>(null)
   const mobileCarouselRef = useRef<HTMLDivElement>(null)
-  const descriptionRef = useRef<HTMLDivElement>(null)
   const calculatorSectionsRef = useRef<HTMLDivElement>(null)
-  const mobilePreloadedRef = useRef<HTMLDivElement>(null)
-  const mobileStandardRef = useRef<HTMLDivElement>(null)
-
-  // Timeout refs for cleanup
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Intersection Observer with stable settings
   useEffect(() => {
@@ -85,21 +67,14 @@ const HowItWorks = () => {
       entries.forEach((entry) => {
         const sectionId = entry.target.getAttribute('data-section')
         if (sectionId) {
-          setVisibleSections(prev => {
-            const newSet = new Set(prev)
-            if (entry.isIntersecting) {
-              newSet.add(sectionId)
-              // Mark section as animated when it becomes visible for the first time
-              setAnimatedSections(prevAnimated => {
-                const newAnimatedSet = new Set(prevAnimated)
-                newAnimatedSet.add(sectionId)
-                return newAnimatedSet
-              })
-            } else {
-              newSet.delete(sectionId)
-            }
-            return newSet
-          })
+          if (entry.isIntersecting) {
+            // Mark section as animated when it becomes visible for the first time
+            setAnimatedSections(prevAnimated => {
+              const newAnimatedSet = new Set(prevAnimated)
+              newAnimatedSet.add(sectionId)
+              return newAnimatedSet
+            })
+          }
         }
       })
     }, observerOptions)
@@ -108,10 +83,7 @@ const HowItWorks = () => {
       headerRef,
       desktopScreenshotsRef,
       mobileCarouselRef,
-      descriptionRef,
       calculatorSectionsRef,
-      mobilePreloadedRef,
-      mobileStandardRef
     ]
 
     sections.forEach(ref => {
@@ -155,18 +127,18 @@ const HowItWorks = () => {
   ]
 
   // Fixed scroll function with proper null checking and typing
-const scrollToSlide = useCallback((
-  ref: React.RefObject<HTMLDivElement | null>, 
-  index: number
-) => {
-  if (!ref.current) return
+  const scrollToSlide = useCallback((
+    ref: React.RefObject<HTMLDivElement | null>, 
+    index: number
+  ) => {
+    if (!ref.current) return
 
-  const slideWidth = ref.current.offsetWidth
-  ref.current.scrollTo({
-    left: index * slideWidth,
-    behavior: 'smooth'
-  })
-}, [])
+    const slideWidth = ref.current.offsetWidth
+    ref.current.scrollTo({
+      left: index * slideWidth,
+      behavior: 'smooth'
+    })
+  }, [])
 
   // Simplified and optimized scroll handler
   const handleScroll = useCallback((
@@ -204,52 +176,22 @@ const scrollToSlide = useCallback((
   }, [handleScroll])
 
   useEffect(() => {
-    const mainRef = mainCarouselRef.current
-    const preloadedRef = preloadedCarouselRef.current
-    const standardRef = standardCarouselRef.current
     const desktopRef = desktopCarouselRef.current
-    const popupRef = popupCarouselRef.current
 
-    // Create throttled handlers
-const handleMainScroll = createThrottledHandler(mainCarouselRef as React.RefObject<HTMLDivElement>, setActiveSlide, mainScreenshots.length)
-const handlePreloadedScroll = createThrottledHandler(preloadedCarouselRef as React.RefObject<HTMLDivElement>, setPreloadedSlide, preloadedScreenshots.length)
-const handleStandardScroll = createThrottledHandler(standardCarouselRef as React.RefObject<HTMLDivElement>, setStandardSlide, standardScreenshots.length)
-const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.RefObject<HTMLDivElement>, setDesktopSection, 2)
+    // Create throttled handler
+    const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.RefObject<HTMLDivElement>, setDesktopSection, 2)
 
-    // Add event listeners with passive flag for better performance
-    if (mainRef) {
-      mainRef.addEventListener('scroll', handleMainScroll, { passive: true })
-    }
-    if (preloadedRef) {
-      preloadedRef.addEventListener('scroll', handlePreloadedScroll, { passive: true })
-    }
-    if (standardRef) {
-      standardRef.addEventListener('scroll', handleStandardScroll, { passive: true })
-    }
+    // Add event listener with passive flag for better performance
     if (desktopRef) {
       desktopRef.addEventListener('scroll', handleDesktopScroll, { passive: true })
     }
 
     return () => {
-      if (mainRef) {
-        mainRef.removeEventListener('scroll', handleMainScroll)
-      }
-      if (preloadedRef) {
-        preloadedRef.removeEventListener('scroll', handlePreloadedScroll)
-      }
-      if (standardRef) {
-        standardRef.removeEventListener('scroll', handleStandardScroll)
-      }
       if (desktopRef) {
         desktopRef.removeEventListener('scroll', handleDesktopScroll)
       }
-      
-      // Cleanup timeouts
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current)
-      }
     }
-  }, [createThrottledHandler, mainScreenshots.length, preloadedScreenshots.length, standardScreenshots.length])
+  }, [createThrottledHandler])
 
   const getCurrentPopupScreenshots = () => {
     switch (popupOpen) {
@@ -351,12 +293,6 @@ const handleDesktopScroll = createThrottledHandler(desktopCarouselRef as React.R
           {title}
         </p>
       )}
-    </div>
-  )
-
-  const AnimatedBadge: React.FC<AnimatedBadgeProps> = ({ type }) => (
-    <div className="bg-[#4580A7] text-white px-4 py-2 rounded-full mb-4 font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-[#3a6b8a] flex items-center justify-center text-center">
-      {type}
     </div>
   )
 
