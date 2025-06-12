@@ -33,6 +33,15 @@ const Testimonials = () => {
     },
     {
       id: 3,
+      name: 'Asmaa Farhath',
+      role: 'B.Tech CSE, 4th Year',
+      content:
+        "Impressed by the simplicity and clarity of the interface. Perfect for students to calculate quick GPA insights without any hassle.",
+      rating: 5,
+      photo: '/testimonials/asmaa.png'
+    },
+    {
+      id: 4,
       name: 'Zahith Niyas',
       role: 'B.Tech CSE, 4th Year',
       content:
@@ -41,23 +50,14 @@ const Testimonials = () => {
       photo: '/testimonials/zahith.png'
     },
     {
-      id: 4,
+      id: 5,
       name: 'Balaji',
       role: 'B.Tech ECE, 4th Year',
       content:
         "Love how it automatically calculates everything based on SRM's grading system. Makes planning my final year so much easier!",
       rating: 5,
       photo: '/testimonials/balaji.jpeg'
-    },
-    // {
-    //   id: 5,
-    //   name: 'Ananya Singh',
-    //   role: 'B.Tech IT, 4th Year',
-    //   content:
-    //     "User-friendly interface with accurate GPA calculations. Perfect for keeping track of my academic progress throughout the semester.",
-    //   rating: 5,
-    //   photo: '/testimonials/priya.jpg'
-    // }
+    }
   ]
 
   const scroll = (direction: 'left' | 'right') => {
