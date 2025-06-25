@@ -3,11 +3,9 @@
 import Image from 'next/image'
 import Button from '@/components/ui/Button'
 import Container from '@/components/ui/Container'
-import { Download } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 const Hero = () => {
-  const [showPopup, setShowPopup] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -16,8 +14,8 @@ const Hero = () => {
   }, [])
 
   const handleDownloadClick = () => {
-    setShowPopup(true)
-    setTimeout(() => setShowPopup(false), 3000) // Auto close after 3 seconds
+    // Open the App Store link in a new tab
+    window.open('https://apps.apple.com/us/app/whats-my-gpa/id6747209109', '_blank')
   }
 
   return (
@@ -62,7 +60,7 @@ const Hero = () => {
                 className="bg-[#4580A7] hover:bg-[#3a6b8f] flex items-center justify-center gap-2 font-nunito-black font-black rounded-full px-6 py-3 w-full sm:w-auto text-base sm:text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 group"
                 style={{ outline: 'none', border: 'none' }}
               >
-                 Download the app
+                 Download the app
               </Button>
             </div>
           </div>
@@ -149,32 +147,6 @@ const Hero = () => {
           </div>
         </div>
       </Container>
-
-      {/* Enhanced Popup Modal with animations */}
-      {showPopup && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-sm w-full mx-4 text-center shadow-2xl animate-in fade-in zoom-in slide-in-from-bottom-4 duration-500">
-            <div className="mb-4">
-              <div className="w-16 h-16 bg-[#4580A7] rounded-full flex items-center justify-center mx-auto mb-4 animate-in zoom-in duration-700 delay-200">
-                <Download className="w-8 h-8 text-white animate-bounce" />
-              </div>
-              <h3 className="text-xl font-nunito-black text-gray-800 mb-2 animate-in slide-in-from-bottom-2 duration-500 delay-300">
-                Coming Soon!
-              </h3>
-              <p className="text-gray-600 animate-in slide-in-from-bottom-2 duration-500 delay-400">
-                The app will be released soon. Stay tuned for updates!
-              </p>
-            </div>
-            <Button
-              onClick={() => setShowPopup(false)}
-              className="bg-[#4580A7] hover:bg-[#3a6b8f] text-white px-6 py-2 rounded-full font-nunito-black transition-all duration-200 focus:outline-none focus:ring-0 active:outline-none border-0 focus:border-0 active:border-0 hover:scale-105 active:scale-95 animate-in slide-in-from-bottom-2 duration-500 delay-500"
-              style={{ outline: 'none', border: 'none' }}
-            >
-              Got it
-            </Button>
-          </div>
-        </div>
-      )}
     </section>
   )
 }
