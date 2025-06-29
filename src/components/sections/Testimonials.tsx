@@ -18,7 +18,7 @@ const Testimonials = () => {
       name: 'Manish Kumar',
       role: 'B.Tech CSE, 3rd Year',
       content:
-        'This app is a lifesaver! No more manually calculating credits and GPA. Just select my course and enter grades - boom, instant results!',
+        'This app is a lifesaver! No more manually calculating GPA. I just had to select my course and enter my grades, and I got instant results. Wish I had this from day one!',
       rating: 5,
       photo: '/testimonials/manish.png'
     },
