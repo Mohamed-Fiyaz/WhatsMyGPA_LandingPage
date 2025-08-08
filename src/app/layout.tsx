@@ -2,20 +2,20 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Nunito } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({ 
-  subsets: ['latin'], 
+const inter = Inter({
+  subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap'
 })
 
-const nunito = Nunito({ 
-  subsets: ['latin'], 
+const nunito = Nunito({
+  subsets: ['latin'],
   variable: '--font-nunito',
   display: 'swap',
-  weight: ['400', '600', '700', '800', '900'] 
+  weight: ['400', '600', '700', '800', '900']
 })
 
-// ✅ Metadata stays the same, but REMOVE viewport from here
+// ✅ Metadata with iTunes app meta tag added
 export const metadata: Metadata = {
   title: "What's My GPA? - GPA Calculator for SRM IST Students",
   description: "Simple and accurate GPA calculator designed specifically for SRM IST students. Calculate SGPA and CGPA with preloaded subjects and credits.",
@@ -28,6 +28,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
   },
+  other: {
+    'apple-itunes-app': 'app-id=6747209109'
+  }
 }
 
 // ✅ Move viewport into its own export
